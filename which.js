@@ -39,7 +39,10 @@ function which (cmd, cb) {
       var ext = pathExt[ii]
       //console.error(p + ext)
       fs.stat(p + ext, function (er, stat) {
-        if (!er && stat && isExe(stat.mode, stat.uid, stat.gid)) {
+        if (!er &&
+            stat &&
+            stat.isFile() &&
+            isExe(stat.mode, stat.uid, stat.gid)) {
           //console.error("yes, exe!", p + ext)
           return cb(null, p + ext)
         }
