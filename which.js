@@ -63,12 +63,22 @@ function which (cmd, cb) {
 function whichSync (cmd) {
   if (cmd.charAt(0) === "/") return cmd
   var pathEnv = (process.env.PATH || "").split(COLON)
+    , pathExt = [""]
+  if (process.platform === "win32") {
+    pathEnv.push(process.cwd())
+    pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
+  }
   for (var i = 0, l = pathEnv.length; i < l; i ++) {
     var p = path.join(pathEnv[i], cmd)
-    if (p === process.execPath) return p
-    var stat
-    try { stat = fs.statSync(p) } catch (ex) {}
-    if (stat && isExe(stat.mode, stat.uid, stat.gid)) return p
+    for (var j = 0, ll = pathExt.length; j < ll; j ++) {
+      var cur = p + pathExt[j]
+      if (cur === process.execPath) return cur
+      var stat
+      try { stat = fs.statSync(cur) } catch (ex) {}
+      if (stat &&
+          stat.isFile() &&
+          isExe(stat.mode, stat.uid, stat.gid)) return cur
+    }
   }
   throw new Error("not found: "+cmd)
 }
