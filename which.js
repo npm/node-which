@@ -4,6 +4,7 @@ which.sync = whichSync
 var path = require("path")
   , fs
   , COLON = process.platform === "win32" ? ";" : ":"
+  , isExe
 
 try {
   fs = require("graceful-fs")
@@ -14,13 +15,19 @@ try {
 // console.log(process.execPath)
 // console.log(process.argv)
 
-function isExe (mod, uid, gid) {
-  //console.error("isExe?", (mod & 0111).toString(8))
-  var ret = (mod & 0001)
-      || (mod & 0010) && process.getgid && gid === process.getgid()
-      || (mod & 0100) && process.getuid && uid === process.getuid()
-  //console.error("isExe?", ret)
-  return ret
+if (process.platform == "win32") {
+  // On windows, there is no good way to check that a file is executable
+  isExe = function isExe () { return true }
+} else {
+  isExe = function isExe (mod, uid, gid) {
+    //console.error(mod, uid, gid);
+    //console.error("isExe?", (mod & 0111).toString(8))
+    var ret = (mod & 0001)
+        || (mod & 0010) && process.getgid && gid === process.getgid()
+        || (mod & 0100) && process.getuid && uid === process.getuid()
+    //console.error("isExe?", ret)
+    return ret
+  }
 }
 function which (cmd, cb) {
   if (cmd.charAt(0) === "/") return cb(null, cmd)
