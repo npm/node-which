@@ -4,6 +4,7 @@ which.sync = whichSync
 var path = require("path")
   , fs
   , COLON = process.platform === "win32" ? ";" : ":"
+  , isExe
 
 try {
   fs = require("graceful-fs")
@@ -14,13 +15,19 @@ try {
 // console.log(process.execPath)
 // console.log(process.argv)
 
-function isExe (mod, uid, gid) {
-  //console.error("isExe?", (mod & 0111).toString(8))
-  var ret = (mod & 0001)
-      || (mod & 0010) && process.getgid && gid === process.getgid()
-      || (mod & 0100) && process.getuid && uid === process.getuid()
-  //console.error("isExe?", ret)
-  return ret
+if (process.platform == "win32") {
+  // On windows, there is no good way to check that a file is executable
+  isExe = function () { return true }
+} else {
+  isExe = function (mod, uid, gid) {
+    //console.error(mod, uid, gid);
+    //console.error("isExe?", (mod & 0111).toString(8))
+    var ret = (mod & 0001)
+        || (mod & 0010) && process.getgid && gid === process.getgid()
+        || (mod & 0100) && process.getuid && uid === process.getuid()
+    //console.error("isExe?", ret)
+    return ret
+  }
 }
 function which (cmd, cb) {
   if (cmd.charAt(0) === "/") return cb(null, cmd)
@@ -56,12 +63,22 @@ function which (cmd, cb) {
 function whichSync (cmd) {
   if (cmd.charAt(0) === "/") return cmd
   var pathEnv = (process.env.PATH || "").split(COLON)
+    , pathExt = [""]
+  if (process.platform === "win32") {
+    pathEnv.push(process.cwd())
+    pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
+  }
   for (var i = 0, l = pathEnv.length; i < l; i ++) {
     var p = path.join(pathEnv[i], cmd)
-    if (p === process.execPath) return p
-    var stat
-    try { stat = fs.statSync(p) } catch (ex) {}
-    if (stat && isExe(stat.mode, stat.uid, stat.gid)) return p
+    for (var j = 0, ll = pathExt.length; j < ll; j ++) {
+      var cur = p + pathExt[j]
+      if (cur === process.execPath) return cur
+      var stat
+      try { stat = fs.statSync(cur) } catch (ex) {}
+      if (stat &&
+          stat.isFile() &&
+          isExe(stat.mode, stat.uid, stat.gid)) return cur
+    }
   }
   throw new Error("not found: "+cmd)
 }
