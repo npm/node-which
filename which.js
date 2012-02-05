@@ -12,9 +12,6 @@ try {
   fs = require("fs")
 }
 
-// console.log(process.execPath)
-// console.log(process.argv)
-
 if (process.platform == "win32") {
   // On windows, there is no good way to check that a file is executable
   isExe = function isExe () { return true }
@@ -29,6 +26,7 @@ if (process.platform == "win32") {
     return ret
   }
 }
+
 function which (cmd, cb) {
   if (cmd.charAt(0) === "/") return cb(null, cmd)
   var pathEnv = (process.env.PATH || "").split(COLON)
@@ -72,7 +70,6 @@ function whichSync (cmd) {
     var p = path.join(pathEnv[i], cmd)
     for (var j = 0, ll = pathExt.length; j < ll; j ++) {
       var cur = p + pathExt[j]
-      if (cur === process.execPath) return cur
       var stat
       try { stat = fs.statSync(cur) } catch (ex) {}
       if (stat &&
