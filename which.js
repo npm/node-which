@@ -27,6 +27,8 @@ if (process.platform == "win32") {
   }
 }
 
+
+
 function which (cmd, cb) {
   if (cmd.charAt(0) === "/") return cb(null, cmd)
   var pathEnv = (process.env.PATH || "").split(COLON)
@@ -34,6 +36,7 @@ function which (cmd, cb) {
   if (process.platform === "win32") {
     pathEnv.push(process.cwd())
     pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
+    if (cmd.indexOf(".") !== -1) pathExt.unshift("")
   }
   //console.error("pathEnv", pathEnv)
   ;(function F (i, l) {
@@ -57,7 +60,6 @@ function which (cmd, cb) {
   })(0, pathEnv.length)
 }
 
-
 function whichSync (cmd) {
   if (cmd.charAt(0) === "/") return cmd
   var pathEnv = (process.env.PATH || "").split(COLON)
@@ -65,6 +67,7 @@ function whichSync (cmd) {
   if (process.platform === "win32") {
     pathEnv.push(process.cwd())
     pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
+    if (cmd.indexOf(".") !== -1) pathExt.unshift("")
   }
   for (var i = 0, l = pathEnv.length; i < l; i ++) {
     var p = path.join(pathEnv[i], cmd)
