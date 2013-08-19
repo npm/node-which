@@ -13,5 +13,11 @@
     "node": "*"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/isaacs/node-which/master/LICENSE"
+    }
+  ]
 }
