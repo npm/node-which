@@ -65,7 +65,7 @@ function whichSync (cmd) {
   var pathEnv = (process.env.PATH || "").split(COLON)
     , pathExt = [""]
   if (process.platform === "win32") {
-    pathEnv.push(process.cwd())
+    pathEnv.unshift(process.cwd())
     pathExt = (process.env.PATHEXT || ".EXE").split(COLON)
     if (cmd.indexOf(".") !== -1) pathExt.unshift("")
   }
