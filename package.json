@@ -9,9 +9,5 @@
   },
   "main": "which.js",
   "bin": "./bin/which",
-  "engines": {
-    "node": "*"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+  "license": "ISC"
 }
