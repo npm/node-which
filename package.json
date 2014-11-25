@@ -13,5 +13,6 @@
     "node": "*"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "license": "MIT"
 }
