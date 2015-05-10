@@ -20,6 +20,15 @@ if (isWindows) {
         || (mod & 0010) && process.getgid && gid === process.getgid()
         || (mod & 0100) && process.getuid && uid === process.getuid()
         || (mod & 0110) && process.getuid && 0   === process.getuid()
+
+    if (process.getgroups && (mod & 0010)) {
+      var groups = process.getgroups()
+      for (var g = 0; g < groups.length; g++) {
+        if (groups[g] === gid)
+          return true
+      }
+    }
+
     return ret
   }
 }
