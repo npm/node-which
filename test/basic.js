@@ -6,8 +6,11 @@ var fixture = __dirname + '/fixture'
 var which = require('../which.js')
 var path = require('path')
 
-var win32 = process.platform === 'win32'
-var skip = { skip: win32 ? 'not relevant on windows' : false }
+var isWindows = process.platform === 'win32' ||
+    process.env.OSTYPE === 'cygwin' ||
+    process.env.OSTYPE === 'msys'
+
+var skip = { skip: isWindows ? 'not relevant on windows' : false }
 
 t.test('setup', function (t) {
   rimraf.sync(fixture)
@@ -49,7 +52,7 @@ t.test('make executable', function (t) {
 
 t.test('find when executable', function (t) {
   t.plan(2)
-  var opt = { pathExt: [ '.sh' ] }
+  var opt = { pathExt: '.sh' }
   var expect = path.resolve(fixture, 'foo.sh').toLowerCase()
 
   t.test('absolute', function (t) {

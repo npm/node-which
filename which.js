@@ -1,13 +1,17 @@
 module.exports = which
 which.sync = whichSync
 
+var isWindows = process.platform === 'win32' ||
+    process.env.OSTYPE === 'cygwin' ||
+    process.env.OSTYPE === 'msys'
+
 var path = require('path')
-var COLON = process.platform === 'win32' ? ';' : ':'
+var COLON = isWindows ? ';' : ':'
 var isExe
 var fs = require('fs')
 var isAbsolute = require('is-absolute')
 
-if (process.platform == 'win32') {
+if (isWindows) {
   // On windows, there is no good way to check that a file is executable
   isExe = function isExe () { return true }
 } else {
@@ -31,7 +35,7 @@ function which (cmd, opt, cb) {
   var pathExt = ['']
 
   // On windows, env.Path is common.
-  if (process.platform === 'win32' && !pathEnv) {
+  if (isWindows && !pathEnv) {
     var k = Object.keys(process.env)
     for (var p = 0; p < k.length; p++) {
       if (p.toLowerCase() === 'path') {
@@ -43,10 +47,10 @@ function which (cmd, opt, cb) {
 
   pathEnv = pathEnv.split(colon)
 
-  if (process.platform === 'win32') {
+  if (isWindows) {
     pathEnv.unshift(process.cwd())
-    pathExt = opt.pathExt || (process.env.PATHEXT || '.EXE').split(colon)
-    if (cmd.indexOf('.') !== -1)
+    pathExt = (opt.pathExt || process.env.PATHEXT || '.EXE').split(colon)
+    if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
       pathExt.unshift('')
   }
 
@@ -83,7 +87,7 @@ function whichSync (cmd, opt) {
   var pathExt = ['']
 
   // On windows, env.Path is common.
-  if (process.platform === 'win32' && !pathEnv) {
+  if (isWindows && !pathEnv) {
     var k = Object.keys(process.env)
     for (var p = 0; p < k.length; p++) {
       if (p.toLowerCase() === 'path') {
@@ -95,12 +99,11 @@ function whichSync (cmd, opt) {
 
   pathEnv = pathEnv.split(colon)
 
-  if (process.platform === 'win32') {
+  if (isWindows) {
     pathEnv.unshift(process.cwd())
     pathExt = (opt.pathExt || process.env.PATHEXT || '.EXE').split(colon)
-    if (cmd.indexOf('.') !== -1) {
+    if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
       pathExt.unshift('')
-    }
   }
 
   // If it's absolute, then we don't bother searching the pathenv.
