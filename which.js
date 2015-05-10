@@ -44,7 +44,7 @@ function which (cmd, opt, cb) {
   pathEnv = pathEnv.split(colon)
 
   if (process.platform === 'win32') {
-    pathEnv.push(process.cwd())
+    pathEnv.unshift(process.cwd())
     pathExt = opt.pathExt || (process.env.PATHEXT || '.EXE').split(colon)
     if (cmd.indexOf('.') !== -1)
       pathExt.unshift('')
@@ -96,7 +96,7 @@ function whichSync (cmd, opt) {
   pathEnv = pathEnv.split(colon)
 
   if (process.platform === 'win32') {
-    pathEnv.push(process.cwd())
+    pathEnv.unshift(process.cwd())
     pathExt = (opt.pathExt || process.env.PATHEXT || '.EXE').split(colon)
     if (cmd.indexOf('.') !== -1) {
       pathExt.unshift('')
