@@ -27,8 +27,21 @@ function which (cmd, opt, cb) {
   }
 
   var colon = opt.colon || COLON
-  var pathEnv = (opt.path || process.env.PATH || '').split(colon)
+  var pathEnv = opt.path || process.env.PATH || ''
   var pathExt = ['']
+
+  // On windows, env.Path is common.
+  if (process.platform === 'win32' && !pathEnv) {
+    var k = Object.keys(process.env)
+    for (var p = 0; p < k.length; p++) {
+      if (p.toLowerCase() === 'path') {
+        pathEnv = process.env[p]
+        break
+      }
+    }
+  }
+
+  pathEnv = pathEnv.split(colon)
 
   if (process.platform === 'win32') {
     pathEnv.push(process.cwd())
@@ -66,8 +79,21 @@ function whichSync (cmd, opt) {
 
   var colon = opt.colon || COLON
 
-  var pathEnv = (opt.path || process.env.PATH || '').split(colon)
+  var pathEnv = opt.path || process.env.PATH || ''
   var pathExt = ['']
+
+  // On windows, env.Path is common.
+  if (process.platform === 'win32' && !pathEnv) {
+    var k = Object.keys(process.env)
+    for (var p = 0; p < k.length; p++) {
+      if (p.toLowerCase() === 'path') {
+        pathEnv = process.env[p]
+        break
+      }
+    }
+  }
+
+  pathEnv = pathEnv.split(colon)
 
   if (process.platform === 'win32') {
     pathEnv.push(process.cwd())
