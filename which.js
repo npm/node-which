@@ -33,26 +33,10 @@ if (isWindows) {
   }
 }
 
-function which (cmd, opt, cb) {
-  if (typeof opt === 'function') {
-    cb = opt
-    opt = {}
-  }
-
+function getPathInfo(cmd, opt) {
   var colon = opt.colon || COLON
   var pathEnv = opt.path || process.env.PATH || ''
   var pathExt = ['']
-
-  // On windows, env.Path is common.
-  if (isWindows && !pathEnv) {
-    var k = Object.keys(process.env)
-    for (var p = 0; p < k.length; p++) {
-      if (p.toLowerCase() === 'path') {
-        pathEnv = process.env[p]
-        break
-      }
-    }
-  }
 
   pathEnv = pathEnv.split(colon)
 
@@ -67,6 +51,19 @@ function which (cmd, opt, cb) {
   // just check the file itself, and that's it.
   if (isAbsolute(cmd))
     pathEnv = ['']
+
+  return {env: pathEnv, ext: pathExt}
+}
+
+function which (cmd, opt, cb) {
+  if (typeof opt === 'function') {
+    cb = opt
+    opt = {}
+  }
+
+  var info = getPathInfo(cmd, opt)
+  var pathEnv = info.env
+  var pathExt = info.ext
 
   ;(function F (i, l) {
     if (i === l) return cb(new Error('not found: '+cmd))
@@ -87,38 +84,11 @@ function which (cmd, opt, cb) {
 }
 
 function whichSync (cmd, opt) {
-  if (!opt)
-    opt = {}
+  opt = opt || {}
 
-  var colon = opt.colon || COLON
-
-  var pathEnv = opt.path || process.env.PATH || ''
-  var pathExt = ['']
-
-  // On windows, env.Path is common.
-  if (isWindows && !pathEnv) {
-    var k = Object.keys(process.env)
-    for (var p = 0; p < k.length; p++) {
-      if (p.toLowerCase() === 'path') {
-        pathEnv = process.env[p]
-        break
-      }
-    }
-  }
-
-  pathEnv = pathEnv.split(colon)
-
-  if (isWindows) {
-    pathEnv.unshift(process.cwd())
-    pathExt = (opt.pathExt || process.env.PATHEXT || '.EXE').split(colon)
-    if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
-      pathExt.unshift('')
-  }
-
-  // If it's absolute, then we don't bother searching the pathenv.
-  // just check the file itself, and that's it.
-  if (isAbsolute(cmd))
-    pathEnv = ['']
+  var info = getPathInfo(cmd, opt)
+  var pathEnv = info.env
+  var pathExt = info.ext
 
   for (var i = 0, l = pathEnv.length; i < l; i ++) {
     var p = path.join(pathEnv[i], cmd)
