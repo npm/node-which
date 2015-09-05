@@ -47,8 +47,9 @@ function which (cmd, opt, cb) {
   if (isWindows && !pathEnv) {
     var k = Object.keys(process.env)
     for (var p = 0; p < k.length; p++) {
-      if (p.toLowerCase() === 'path') {
-        pathEnv = process.env[p]
+      var key = k[p]
+      if (key.toLowerCase() === 'path') {
+        pathEnv = process.env[key]
         break
       }
     }
