@@ -11,17 +11,21 @@ var isExe
 var fs = require('fs')
 var isAbsolute = require('is-absolute')
 
+var G =  parseInt('0010', 8)
+var U =  parseInt('0100', 8)
+var UG = parseInt('0110', 8)
+
 if (isWindows) {
   // On windows, there is no good way to check that a file is executable
   isExe = function isExe () { return true }
 } else {
   isExe = function isExe (mod, uid, gid) {
-    var ret = (mod & 0001)
-        || (mod & 0010) && process.getgid && gid === process.getgid()
-        || (mod & 0100) && process.getuid && uid === process.getuid()
-        || (mod & 0110) && process.getuid && 0   === process.getuid()
+    var ret = (mod & 1)
+        || (mod & U)  && process.getgid && gid === process.getgid()
+        || (mod & G)  && process.getuid && uid === process.getuid()
+        || (mod & UG) && process.getuid && 0   === process.getuid()
 
-    if (process.getgroups && (mod & 0010)) {
+    if (!ret && process.getgroups && (mod & G)) {
       var groups = process.getgroups()
       for (var g = 0; g < groups.length; g++) {
         if (groups[g] === gid)
