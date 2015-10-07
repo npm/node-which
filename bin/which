@@ -10,7 +10,6 @@ process.exit(process.argv.slice(2).reduce(function(pv, current) {
     console.log(which.sync(current))
     return pv;
   } catch (e) {
-    console.error(e.message)
     return 1;
   }
 }, 0))
