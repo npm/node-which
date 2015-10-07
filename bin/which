@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 var which = require("../")
 if (process.argv.length < 3) {
-  console.error("Usage: which <thing>")
+  console.error('Usage: which \u001b[4mprogram\u001b[24m ...')
   process.exit(1)
 }
 
-which(process.argv[2], function (er, thing) {
-  if (er) {
-    console.error(er.message)
-    process.exit(er.errno || 127)
+process.exit(process.argv.slice(2).reduce(function(pv, current) {
+  try {
+    console.log(which.sync(current))
+    return pv;
+  } catch (e) {
+    console.error(e.message)
+    return 1;
   }
-  console.log(thing)
-})
+}, 0))
