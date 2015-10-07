@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var which = require("../")
 if (process.argv.length < 3) {
-  console.error('Usage: which \u001b[4mprogram\u001b[24m ...')
+  console.error('Usage: which <program>...')
   process.exit(1)
 }
 
