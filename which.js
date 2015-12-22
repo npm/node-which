@@ -21,8 +21,8 @@ if (isWindows) {
 } else {
   isExe = function isExe (mod, uid, gid) {
     var ret = (mod & 1)
-        || (mod & U)  && process.getgid && gid === process.getgid()
-        || (mod & G)  && process.getuid && uid === process.getuid()
+        || (mod & G)  && process.getgid && gid === process.getgid()
+        || (mod & U)  && process.getuid && uid === process.getuid()
         || (mod & UG) && process.getuid && 0   === process.getuid()
 
     if (!ret && process.getgroups && (mod & G)) {
