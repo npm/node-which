@@ -11,14 +11,15 @@
   "bin": "./bin/which",
   "license": "ISC",
   "dependencies": {
-    "is-absolute": "^0.1.7"
+    "is-absolute": "^0.1.7",
+    "isexe": "^1.0.1"
   },
   "devDependencies": {
     "mkdirp": "^0.5.0",
     "rimraf": "^2.3.3",
-    "tap": "^2.0.0"
+    "tap": "^5.1.1"
   },
   "scripts": {
-    "test": "tap test/*.js"
+    "test": "tap test/*.js --cov"
   }
 }
