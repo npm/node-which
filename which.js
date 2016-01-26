@@ -18,9 +18,12 @@ function getPathInfo(cmd, opt) {
 
   pathEnv = pathEnv.split(colon)
 
+  var pathExtExe = ''
   if (isWindows) {
     pathEnv.unshift(process.cwd())
-    pathExt = (opt.pathExt || process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM').split(colon)
+    pathExtExe = (opt.pathExt || process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM')
+    pathExt = pathExtExe.split(colon)
+
 
     // Always test the cmd itself first.  isexe will check to make sure
     // it's found in the pathExt set.
@@ -33,7 +36,11 @@ function getPathInfo(cmd, opt) {
   if (isAbsolute(cmd))
     pathEnv = ['']
 
-  return {env: pathEnv, ext: pathExt}
+  return {
+    env: pathEnv,
+    ext: pathExt,
+    extExe: pathExtExe
+  }
 }
 
 function which (cmd, opt, cb) {
@@ -45,6 +52,7 @@ function which (cmd, opt, cb) {
   var info = getPathInfo(cmd, opt)
   var pathEnv = info.env
   var pathExt = info.ext
+  var pathExtExe = info.extExe
   var found = []
 
   ;(function F (i, l) {
@@ -63,7 +71,7 @@ function which (cmd, opt, cb) {
     ;(function E (ii, ll) {
       if (ii === ll) return F(i + 1, l)
       var ext = pathExt[ii]
-      isexe(p + ext, function (er, is) {
+      isexe(p + ext, { pathExt: pathExtExe }, function (er, is) {
         if (!er && is) {
           if (opt.all)
             found.push(p + ext)
@@ -82,6 +90,7 @@ function whichSync (cmd, opt) {
   var info = getPathInfo(cmd, opt)
   var pathEnv = info.env
   var pathExt = info.ext
+  var pathExtExe = info.exeExe
   var found = []
 
   for (var i = 0, l = pathEnv.length; i < l; i ++) {
@@ -94,7 +103,7 @@ function whichSync (cmd, opt) {
       var cur = p + pathExt[j]
       var is
       try {
-        is = isexe.sync(cur)
+        is = isexe.sync(cur, { pathExt: pathExtExe })
         if (is) {
           if (opt.all)
             found.push(cur)
