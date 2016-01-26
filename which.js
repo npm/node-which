@@ -90,7 +90,7 @@ function whichSync (cmd, opt) {
   var info = getPathInfo(cmd, opt)
   var pathEnv = info.env
   var pathExt = info.ext
-  var pathExtExe = info.exeExe
+  var pathExtExe = info.extExe
   var found = []
 
   for (var i = 0, l = pathEnv.length; i < l; i ++) {
