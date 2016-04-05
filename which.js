@@ -11,6 +11,13 @@ var isexe = require('isexe')
 var fs = require('fs')
 var isAbsolute = require('is-absolute')
 
+function getNotFoundError (cmd) {
+  var er = new Error('not found: ' + cmd)
+  er.code = 'ENOENT'
+
+  return er
+}
+
 function getPathInfo (cmd, opt) {
   var colon = opt.colon || COLON
   var pathEnv = opt.path || process.env.Path || process.env.PATH || ''
@@ -60,7 +67,7 @@ function which (cmd, opt, cb) {
       if (opt.all && found.length)
         return cb(null, found)
       else
-        return cb(new Error('not found: '+cmd))
+        return cb(getNotFoundError(cmd))
     }
 
     var pathPart = pathEnv[i]
@@ -117,5 +124,5 @@ function whichSync (cmd, opt) {
   if (opt.all && found.length)
     return found
 
-  throw new Error('not found: '+cmd)
+  throw getNotFoundError(cmd)
 }
