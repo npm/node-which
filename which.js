@@ -11,7 +11,7 @@ var isexe = require('isexe')
 var fs = require('fs')
 var isAbsolute = require('is-absolute')
 
-function getPathInfo(cmd, opt) {
+function getPathInfo (cmd, opt) {
   var colon = opt.colon || COLON
   var pathEnv = opt.path || process.env.Path || process.env.PATH || ''
   var pathExt = ['']

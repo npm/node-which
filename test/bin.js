@@ -37,7 +37,7 @@ t.test('finds node', function (t) {
     t.equal(signal, null)
     t.equal(code, 0)
     t.equal(err, '')
-    t.match(out, /[\\\/]node(\.exe)?$/)
+    t.match(out, /[\\\/]node(\.exe)?$/i)
     t.end()
   })
 })
@@ -57,9 +57,9 @@ t.test('finds node and tap', function (t) {
     t.equal(signal, null)
     t.equal(code, 0)
     t.equal(err, '')
-    t.match(out.split(/\n/), [
-      /[\\\/]node(\.exe)?$/,
-      /[\\\/]tap(\.cmd)?$/
+    t.match(out.split(/[\r\n]+/), [
+      /[\\\/]node(\.exe)?$/i,
+      /[\\\/]tap(\.cmd)?$/i
     ])
     t.end()
   })
@@ -70,9 +70,9 @@ t.test('finds node and tap, but not flergyderp', function (t) {
     t.equal(signal, null)
     t.equal(code, 1)
     t.equal(err, '')
-    t.match(out.split(/\n/), [
-      /[\\\/]node(\.exe)?$/,
-      /[\\\/]tap(\.cmd)?$/
+    t.match(out.split(/[\r\n]+/), [
+      /[\\\/]node(\.exe)?$/i,
+      /[\\\/]tap(\.cmd)?$/i
     ])
     t.end()
   })
@@ -90,8 +90,14 @@ t.test('cli flags', function (t) {
         t.equal(err, '')
         if (/s/.test(c))
           t.equal(out, '', 'should be silent')
-        else if (/a/.test(c))
-          t.ok(out.split(/\n/).length > 1, 'should have more than 1 result')
+        else if (/a/.test(c)) {
+          out = out.split(/[\r\n]+/)
+          var opt = { actual: out }
+          if (process.platform === 'win32') {
+            opt.skip = 'windows does not have builtin "which"'
+          }
+          t.ok(out.length > 1, 'should have more than 1 result', opt)
+        }
         t.end()
       })
     })

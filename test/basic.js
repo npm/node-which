@@ -77,11 +77,17 @@ t.test('find when executable', function (t) {
   }, function (t) {
     var pe = process.env.PATHEXT
     process.env.PATHEXT = '.SH'
+    process.env.PATH = ""
+    process.env.Path = fixture
 
     t.test('foo.sh', function (t) {
+      process.env.PATH = ""
+      process.env.Path = fixture
       runTest('foo.sh', t)
     })
     t.test('foo', function (t) {
+      process.env.PATH = ""
+      process.env.Path = fixture
       runTest('foo', t)
     })
     t.test('replace', function (t) {
