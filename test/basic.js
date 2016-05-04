@@ -79,10 +79,10 @@ t.test('find when executable', function (t) {
     process.env.PATHEXT = '.SH'
 
     t.test('foo.sh', function (t) {
-      runTest('foo.sh', t)
+      runTest(fixture + '/foo.sh', t)
     })
     t.test('foo', function (t) {
-      runTest('foo', t)
+      runTest(fixture + '/foo', t)
     })
     t.test('replace', function (t) {
       process.env.PATHEXT = pe

@@ -37,7 +37,7 @@ t.test('finds node', function (t) {
     t.equal(signal, null)
     t.equal(code, 0)
     t.equal(err, '')
-    t.match(out, /[\\\/]node(\.exe)?$/)
+    t.match(out, /[\\\/]node(\.exe)?$/i)
     t.end()
   })
 })
@@ -58,8 +58,8 @@ t.test('finds node and tap', function (t) {
     t.equal(code, 0)
     t.equal(err, '')
     t.match(out.split(/\n/), [
-      /[\\\/]node(\.exe)?$/,
-      /[\\\/]tap(\.cmd)?$/
+      /[\\\/]node(\.exe)?$/i,
+      /[\\\/]tap(\.cmd)?$/i
     ])
     t.end()
   })
@@ -71,8 +71,8 @@ t.test('finds node and tap, but not flergyderp', function (t) {
     t.equal(code, 1)
     t.equal(err, '')
     t.match(out.split(/\n/), [
-      /[\\\/]node(\.exe)?$/,
-      /[\\\/]tap(\.cmd)?$/
+      /[\\\/]node(\.exe)?$/i,
+      /[\\\/]tap(\.cmd)?$/i
     ])
     t.end()
   })
