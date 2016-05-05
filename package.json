@@ -21,5 +21,9 @@
   },
   "scripts": {
     "test": "tap test/*.js --cov"
-  }
+  },
+  "files": [
+    "which.js",
+    "bin/which"
+  ]
 }
