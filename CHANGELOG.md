@@ -1,5 +1,8 @@
 # Changes
 
+
+## v1.2.5
+
 make a changelog, and keep it up to date
 don't include tests in package
 Properly handle relative-path executables
