@@ -4,7 +4,6 @@
 ## v1.2.6
 
 * make the changelog bulleted
-* update changelog - 1.2.5
 
 ## v1.2.5
 
