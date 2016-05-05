@@ -38,9 +38,9 @@ function getPathInfo (cmd, opt) {
       pathExt.unshift('')
   }
 
-  // If it's absolute, then we don't bother searching the pathenv.
+  // If it has a slash, then we don't bother searching the pathenv.
   // just check the file itself, and that's it.
-  if (isAbsolute(cmd))
+  if (cmd.match(/\//) || isWindows && cmd.match(/\\/))
     pathEnv = ['']
 
   return {
@@ -74,7 +74,10 @@ function which (cmd, opt, cb) {
     if (pathPart.charAt(0) === '"' && pathPart.slice(-1) === '"')
       pathPart = pathPart.slice(1, -1)
 
-    var p = path.resolve(pathPart, cmd)
+    var p = path.join(pathPart, cmd)
+    if (!pathPart && (/^\./).test(cmd)) {
+      p = cmd.slice(0, 2) + p
+    }
     ;(function E (ii, ll) {
       if (ii === ll) return F(i + 1, l)
       var ext = pathExt[ii]
@@ -106,6 +109,9 @@ function whichSync (cmd, opt) {
       pathPart = pathPart.slice(1, -1)
 
     var p = path.join(pathPart, cmd)
+    if (!pathPart && (/^\./).test(cmd)) {
+      p = cmd.slice(0, 2) + p
+    }
     for (var j = 0, ll = pathExt.length; j < ll; j ++) {
       var cur = p + pathExt[j]
       var is
