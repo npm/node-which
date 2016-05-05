@@ -1,6 +1,10 @@
 # Changes
 
 
+## v1.2.7
+
+* strip 'update changelog' changelog entries out of changelog
+
 ## v1.2.6
 
 * make the changelog bulleted
