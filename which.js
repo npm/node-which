@@ -9,7 +9,6 @@ var path = require('path')
 var COLON = isWindows ? ';' : ':'
 var isexe = require('isexe')
 var fs = require('fs')
-var isAbsolute = require('is-absolute')
 
 function getNotFoundError (cmd) {
   var er = new Error('not found: ' + cmd)
