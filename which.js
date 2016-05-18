@@ -74,7 +74,7 @@ function which (cmd, opt, cb) {
       pathPart = pathPart.slice(1, -1)
 
     var p = path.join(pathPart, cmd)
-    if (!pathPart && (/^\./).test(cmd)) {
+    if (!pathPart && (/^\.[\\\/]/).test(cmd)) {
       p = cmd.slice(0, 2) + p
     }
     ;(function E (ii, ll) {
@@ -108,7 +108,7 @@ function whichSync (cmd, opt) {
       pathPart = pathPart.slice(1, -1)
 
     var p = path.join(pathPart, cmd)
-    if (!pathPart && (/^\./).test(cmd)) {
+    if (!pathPart && /^\.[\\\/]/.test(cmd)) {
       p = cmd.slice(0, 2) + p
     }
     for (var j = 0, ll = pathExt.length; j < ll; j ++) {

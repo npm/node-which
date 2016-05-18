@@ -120,7 +120,7 @@ t.test('find when executable', function (t) {
   t.test('relative path', function (t) {
     var opt = { pathExt: '.sh' }
     var expect = path.join('test/fixture/foo.sh')
-    t.plan(2)
+    t.plan(3)
 
     t.test('no ./', function (t) {
       t.plan(2)
@@ -139,6 +139,19 @@ t.test('find when executable', function (t) {
       var actual = which.sync('./test/fixture/foo.sh', opt)
       t.equal(actual, expect)
       which('./test/fixture/foo.sh', opt, function (er, actual) {
+        if (er)
+          throw er
+        t.equal(actual, expect)
+      })
+    })
+
+    t.test('with ../', function (t) {
+      t.plan(2)
+      var dir = path.basename(process.cwd())
+      expect = path.join('..', dir, 'test/fixture/foo.sh')
+      var actual = which.sync(expect)
+      t.equal(actual, expect)
+      which(expect, opt, function (er, actual) {
         if (er)
           throw er
         t.equal(actual, expect)
