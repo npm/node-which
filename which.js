@@ -7,6 +7,7 @@ var isWindows = process.platform === 'win32' ||
 
 var path = require('path')
 var COLON = isWindows ? ';' : ':'
+var PATH_ENV_KEY = isWindows ? 'Path' : 'PATH'
 var isexe = require('isexe')
 var fs = require('fs')
 
@@ -19,7 +20,7 @@ function getNotFoundError (cmd) {
 
 function getPathInfo (cmd, opt) {
   var colon = opt.colon || COLON
-  var pathEnv = opt.path || process.env.Path || process.env.PATH || ''
+  var pathEnv = opt.path || process.env[PATH_ENV_KEY] || ''
   var pathExt = ['']
 
   pathEnv = pathEnv.split(colon)

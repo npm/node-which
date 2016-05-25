@@ -11,6 +11,7 @@ var isWindows = process.platform === 'win32' ||
     process.env.OSTYPE === 'msys'
 
 var skip = { skip: isWindows ? 'not relevant on windows' : false }
+var PATH_ENV_KEY = isWindows ? 'Path' : 'PATH'
 
 t.test('setup', function (t) {
   rimraf.sync(fixture)
@@ -75,7 +76,7 @@ t.test('find when executable', function (t) {
   })
 
   t.test('with process.env.PATH', function (t) {
-    process.env.PATH = process.env.Path = fixture
+    process.env[PATH_ENV_KEY] = fixture
     runTest('foo.sh', t)
   })
 
