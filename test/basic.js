@@ -68,22 +68,14 @@ t.test('make executable', function (t) {
 t.test('find when executable', function (t) {
   var opt = { pathExt: '.sh' }
   var expect = path.resolve(fixture, 'foo.sh').toLowerCase()
-  var PATH = process.env.PATH || process.env.Path
+  var PATH = process.env.PATH
 
   t.test('absolute', function (t) {
     runTest(fixture + '/foo.sh', t)
   })
 
   t.test('with process.env.PATH', function (t) {
-    process.env.PATH = process.env.Path = fixture
-    runTest('foo.sh', t)
-  })
-
-  t.test('with process.env.Path', {
-    skip: isWindows ? false : 'Only for Windows'
-  }, function (t) {
-    process.env.PATH = ""
-    process.env.Path = fixture
+    process.env.PATH = fixture
     runTest('foo.sh', t)
   })
 
@@ -92,17 +84,14 @@ t.test('find when executable', function (t) {
   }, function (t) {
     var pe = process.env.PATHEXT
     process.env.PATHEXT = '.SH'
-    process.env.PATH = ""
-    process.env.Path = fixture
+    process.env.PATH = fixture
 
     t.test('foo.sh', function (t) {
-      process.env.PATH = ""
-      process.env.Path = fixture
+      process.env.PATH = fixture
       runTest('foo.sh', t)
     })
     t.test('foo', function (t) {
-      process.env.PATH = ""
-      process.env.Path = fixture
+      process.env.PATH = fixture
       runTest('foo', t)
     })
     t.test('replace', function (t) {
