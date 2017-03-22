@@ -8,6 +8,7 @@ var isWindows = process.platform === 'win32' ||
 var path = require('path')
 var COLON = isWindows ? ';' : ':'
 var isexe = require('isexe')
+var isdir = require('is-directory')
 
 function getNotFoundError (cmd) {
   var er = new Error('not found: ' + cmd)
@@ -80,13 +81,18 @@ function which (cmd, opt, cb) {
       if (ii === ll) return F(i + 1, l)
       var ext = pathExt[ii]
       isexe(p + ext, { pathExt: pathExtExe }, function (er, is) {
-        if (!er && is) {
-          if (opt.all)
-            found.push(p + ext)
-          else
-            return cb(null, p + ext)
-        }
-        return E(ii + 1, ll)
+        if (!er && is)
+          isdir(p + ext, function (er, is) {
+            if (!(er || is)) {
+              if (opt.all)
+                found.push(p + ext)
+              else
+                return cb(null, p + ext)
+            }
+            return E(ii + 1, ll)
+          })
+        else
+          return E(ii + 1, ll)
       })
     })(0, pathExt.length)
   })(0, pathEnv.length)
@@ -114,7 +120,7 @@ function whichSync (cmd, opt) {
       var cur = p + pathExt[j]
       var is
       try {
-        is = isexe.sync(cur, { pathExt: pathExtExe })
+        is = isexe.sync(cur, { pathExt: pathExtExe }) && !isdir.sync(cur)
         if (is) {
           if (opt.all)
             found.push(cur)
