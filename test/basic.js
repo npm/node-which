@@ -12,10 +12,14 @@ var isWindows = process.platform === 'win32' ||
 
 var skip = { skip: isWindows ? 'not relevant on windows' : false }
 
+var dirExe = 'dirbin'
+var dirExePath = path.join(fixture, dirExe)
+
 t.test('setup', function (t) {
   rimraf.sync(fixture)
   mkdirp.sync(fixture)
   fs.writeFileSync(fixture + '/foo.sh', 'echo foo\n')
+  mkdirp.sync(dirExePath, { mode: 0755 });
   t.end()
 })
 
@@ -164,6 +168,26 @@ t.test('find when executable', function (t) {
   }
 
   t.end()
+})
+
+t.test('executable dir', function (t) {
+  t.plan(5);
+  var PATH = process.env.PATH
+  process.env.PATH = fixture
+  
+  which(dirExe, function (er, found) {
+    t.type(found, 'undefined')
+    t.isa(er, Error)
+    t.equal(er.code, 'ENOENT')
+  })
+  
+  t.throws(function () {
+    var found = which.sync(dirExe)
+    t.type(found, 'undefined')
+  }, {code: 'ENOENT'})
+  
+  process.env.PATH = PATH
+  t.end();
 })
 
 t.test('clean', function (t) {
