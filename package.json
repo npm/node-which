@@ -11,7 +11,7 @@
   "bin": "./bin/which",
   "license": "ISC",
   "dependencies": {
-    "isexe": "^1.1.1"
+    "isexe": "^2.0.0"
   },
   "devDependencies": {
     "mkdirp": "^0.5.0",
