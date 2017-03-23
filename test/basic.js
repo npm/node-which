@@ -138,7 +138,7 @@ t.test('find when executable', function (t) {
       t.plan(2)
       var dir = path.basename(process.cwd())
       expect = path.join('..', dir, 'test/fixture/foo.sh')
-      var actual = which.sync(expect)
+      var actual = which.sync(expect, opt)
       t.equal(actual, expect)
       which(expect, opt, function (er, actual) {
         if (er)
