@@ -20,7 +20,7 @@ t.test('setup', function (t) {
 })
 
 t.test('does not find missed', function(t) {
-  t.plan(3)
+  t.plan(4)
 
   which(fixture + '/foobar.sh', function (er) {
     t.isa(er, Error)
@@ -30,6 +30,8 @@ t.test('does not find missed', function(t) {
   t.throws(function () {
     which.sync(fixture + '/foobar.sh')
   }, {code: 'ENOENT'})
+
+  t.equal(which.sync(fixture + '/foobar.sh', {nothrow:true}), null)
 })
 
 t.test('does not find non-executable', skip, function (t) {
