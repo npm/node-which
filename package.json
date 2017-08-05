@@ -9,6 +9,7 @@
   },
   "main": "which.js",
   "bin": "./bin/which",
+  "types": "which.d.ts",
   "license": "ISC",
   "dependencies": {
     "isexe": "^2.0.0"
@@ -25,6 +26,7 @@
   },
   "files": [
     "which.js",
-    "bin/which"
+    "bin/which",
+    "which.d.ts"
   ]
 }
