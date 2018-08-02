@@ -34,6 +34,11 @@ function getPathInfo (cmd, opt) {
     // it's found in the pathExt set.
     if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
       pathExt.unshift('')
+
+    // Check both upper and lower-case, for case-sensitive directories
+    for (var i = 0, l = pathExt.length; i < l; i ++) {
+      pathExt.push(pathExt[i].toLowerCase());
+    }
   }
 
   // If it has a slash, then we don't bother searching the pathenv.
