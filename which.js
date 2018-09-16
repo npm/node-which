@@ -55,7 +55,7 @@ function which (cmd, opt, cb) {
   }
 
   var info = getPathInfo(cmd, opt)
-  var pathEnv = info.env
+  var pathEnv = [].concat((opt.prioritizedPaths || []), info.env)
   var pathExt = info.ext
   var pathExtExe = info.extExe
   var found = []
@@ -96,7 +96,7 @@ function whichSync (cmd, opt) {
   opt = opt || {}
 
   var info = getPathInfo(cmd, opt)
-  var pathEnv = info.env
+  var pathEnv = [].concat((opt.prioritizedPaths || []), info.env)
   var pathExt = info.ext
   var pathExtExe = info.extExe
   var found = []
