@@ -8,6 +8,7 @@ var isWindows = process.platform === 'win32' ||
 var path = require('path')
 var COLON = isWindows ? ';' : ':'
 var isexe = require('isexe')
+var os = require('os')
 
 function getNotFoundError (cmd) {
   var er = new Error('not found: ' + cmd)
@@ -35,6 +36,11 @@ function getPathInfo (cmd, opt) {
     if (cmd.indexOf('.') !== -1 && pathExt[0] !== '')
       pathExt.unshift('')
   }
+
+  // Expand all user paths that begin with ~/
+  for (let i = 0 ; i < pathEnv.length ; i++)
+    if (pathEnv[i].substring(0, 2) == '~/')
+      pathEnv[i] = path.resolve(os.homedir(), pathEnv[i].substring(2))
 
   // If it has a slash, then we don't bother searching the pathenv.
   // just check the file itself, and that's it.
