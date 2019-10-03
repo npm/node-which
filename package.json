@@ -20,8 +20,13 @@
   },
   "scripts": {
     "test": "tap",
-    "changelog": "bash gen-changelog.sh",
-    "postversion": "npm run changelog && git add CHANGELOG.md && git commit -m 'update changelog - '${npm_package_version}"
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublish": "npm run changelog",
+    "prechangelog": "bash gen-changelog.sh",
+    "changelog": "git add CHANGELOG.md",
+    "postchangelog": "git commit -m 'update changelog - '${npm_package_version}",
+    "postpublish": "git push origin --follow-tags"
   },
   "files": [
     "which.js",
