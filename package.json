@@ -19,7 +19,7 @@
     "tap": "^14.6.9"
   },
   "scripts": {
-    "test": "tap test/*.js --cov",
+    "test": "tap",
     "changelog": "bash gen-changelog.sh",
     "postversion": "npm run changelog && git add CHANGELOG.md && git commit -m 'update changelog - '${npm_package_version}"
   },
@@ -27,6 +27,9 @@
     "which.js",
     "bin/which"
   ],
+  "tap": {
+    "check-coverage": true
+  },
   "engines": {
     "node": ">= 8"
   }
