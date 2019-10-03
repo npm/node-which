@@ -45,17 +45,16 @@ const which = (cmd, opt, cb) => {
     cb = opt
     opt = {}
   }
+  if (!opt)
+    opt = {}
 
   const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt)
   const found = []
 
-  const F = i => {
-    if (i === pathEnv.length) {
-      if (opt.all && found.length)
-        return cb(null, found)
-      else
-        return cb(getNotFoundError(cmd))
-    }
+  const step = i => new Promise((resolve, reject) => {
+    if (i === pathEnv.length)
+      return opt.all && found.length ? resolve(found)
+        : reject(getNotFoundError(cmd))
 
     const ppRaw = pathEnv[i]
     const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw
@@ -64,23 +63,25 @@ const which = (cmd, opt, cb) => {
     const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd
       : pCmd
 
-    const E = (ii) => {
-      if (ii === pathExt.length)
-        return F(i + 1)
-      const ext = pathExt[ii]
-      isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
-        if (!er && is) {
-          if (opt.all)
-            found.push(p + ext)
-          else
-            return cb(null, p + ext)
-        }
-        return E(ii + 1, pathExt.length)
-      })
-    }
-    return E(0)
-  }
-  return F(0)
+    resolve(subStep(p, i, 0))
+  })
+
+  const subStep = (p, i, ii) => new Promise((resolve, reject) => {
+    if (ii === pathExt.length)
+      return resolve(step(i + 1))
+    const ext = pathExt[ii]
+    isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
+      if (!er && is) {
+        if (opt.all)
+          found.push(p + ext)
+        else
+          return resolve(p + ext)
+      }
+      return resolve(subStep(p, i, ii + 1))
+    })
+  })
+
+  return cb ? step(0).then(res => cb(null, res), cb) : step(0)
 }
 
 const whichSync = (cmd, opt) => {

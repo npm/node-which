@@ -21,11 +21,10 @@ t.test('setup', function (t) {
 })
 
 t.test('does not find missed', function(t) {
-  t.plan(4)
+  t.plan(3)
 
-  which(fixture + '/foobar.sh', function (er) {
-    t.isa(er, Error)
-    t.equal(er.code, 'ENOENT')
+  t.rejects(which(fixture + '/foobar.sh'), {
+    code: 'ENOENT',
   })
 
   t.throws(function () {
@@ -181,13 +180,10 @@ t.test('find all', t => {
     colon: ':',
     all: true,
   }
-  which('x.cmd', opt, (er, all) => {
-    if (er)
-      throw er
+  const allsync = which.sync('x.cmd', opt)
+  t.same(allsync, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
+  return which('x.cmd', opt).then(all => {
     t.same(all, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
-    const allsync = which.sync('x.cmd', opt)
-    t.same(allsync, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
-    t.end()
   })
 })
 
