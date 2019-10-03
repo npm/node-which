@@ -2,7 +2,8 @@ var t = require('tap')
 var fs = require('fs')
 var rimraf = require('rimraf')
 var mkdirp = require('mkdirp')
-var fixture = __dirname + '/fixture'
+const fixdir = `'/fixture-${(+process.env.TAP_CHILD_ID || 0)}`
+var fixture = `${__dirname}/${fixdir}`
 var which = require('../which.js')
 var path = require('path')
 
@@ -110,14 +111,14 @@ t.test('find when executable', function (t) {
 
   t.test('relative path', function (t) {
     var opt = { pathExt: '.sh' }
-    var expect = path.join('test/fixture/foo.sh')
+    var expect = path.join(`test/${fixdir}/foo.sh`)
     t.plan(3)
 
     t.test('no ./', function (t) {
       t.plan(2)
-      var actual = which.sync('test/fixture/foo.sh', opt)
+      var actual = which.sync(`test/${fixdir}/foo.sh`, opt)
       t.equal(actual, expect)
-      which('test/fixture/foo.sh', opt, function (er, actual) {
+      which(`test/${fixdir}/foo.sh`, opt, function (er, actual) {
         if (er)
           throw er
         t.equal(actual, expect)
@@ -127,9 +128,9 @@ t.test('find when executable', function (t) {
     t.test('with ./', function (t) {
       t.plan(2)
       expect = './' + expect
-      var actual = which.sync('./test/fixture/foo.sh', opt)
+      var actual = which.sync(`./test/${fixdir}/foo.sh`, opt)
       t.equal(actual, expect)
-      which('./test/fixture/foo.sh', opt, function (er, actual) {
+      which(`./test/${fixdir}/foo.sh`, opt, function (er, actual) {
         if (er)
           throw er
         t.equal(actual, expect)
@@ -139,7 +140,7 @@ t.test('find when executable', function (t) {
     t.test('with ../', function (t) {
       t.plan(2)
       var dir = path.basename(process.cwd())
-      expect = path.join('..', dir, 'test/fixture/foo.sh')
+      expect = path.join('..', dir, `test/${fixdir}/foo.sh`)
       var actual = which.sync(expect, opt)
       t.equal(actual, expect)
       which(expect, opt, function (er, actual) {
@@ -166,6 +167,28 @@ t.test('find when executable', function (t) {
   }
 
   t.end()
+})
+
+t.test('find all', t => {
+  mkdirp.sync(`${fixture}/all/a`)
+  mkdirp.sync(`${fixture}/all/b`)
+  fs.writeFileSync(`${fixture}/all/a/x.cmd`, 'exec me')
+  fs.writeFileSync(`${fixture}/all/b/x.cmd`, 'exec me')
+  fs.chmodSync(`${fixture}/all/a/x.cmd`, 0o755)
+  fs.chmodSync(`${fixture}/all/b/x.cmd`, 0o755)
+  const opt = {
+    path: `${fixture}/all/a:"${fixture}/all/b"`,
+    colon: ':',
+    all: true,
+  }
+  which('x.cmd', opt, (er, all) => {
+    if (er)
+      throw er
+    t.same(all, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
+    const allsync = which.sync('x.cmd', opt)
+    t.same(allsync, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
+    t.end()
+  })
 })
 
 t.test('clean', function (t) {
