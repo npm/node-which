@@ -1,6 +1,10 @@
 # Changes
 
 
+## 2.0.0
+
+* Parallel tests, modern JavaScript, and drop support for node < 8
+
 ## 1.3.1
 
 * update deps
