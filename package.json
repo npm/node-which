@@ -8,7 +8,7 @@
     "url": "git://github.com/isaacs/node-which.git"
   },
   "main": "which.js",
-  "bin": "./bin/which",
+  "bin": "./bin/node-which",
   "license": "ISC",
   "dependencies": {
     "isexe": "^2.0.0"
