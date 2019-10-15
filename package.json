@@ -8,7 +8,9 @@
     "url": "git://github.com/isaacs/node-which.git"
   },
   "main": "which.js",
-  "bin": "./bin/which",
+  "bin": {
+    "node-which": "./bin/node-which"
+  },
   "license": "ISC",
   "dependencies": {
     "isexe": "^2.0.0"
@@ -30,7 +32,7 @@
   },
   "files": [
     "which.js",
-    "bin/which"
+    "bin/node-which"
   ],
   "tap": {
     "check-coverage": true

@@ -1,7 +1,7 @@
 var t = require('tap')
 var spawn = require('child_process').spawn
 var node = process.execPath
-var bin = require.resolve('../bin/which')
+var bin = require.resolve('../bin/node-which')
 
 function which (args, extraPath, cb) {
   if (typeof extraPath === 'function')

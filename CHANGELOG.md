@@ -1,6 +1,5 @@
 # Changes
 
-
 ## 2.0.1
 
 * generate changelog and publish on version bump
