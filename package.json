@@ -30,7 +30,7 @@
   },
   "files": [
     "which.js",
-    "bin/which"
+    "bin/node-which"
   ],
   "tap": {
     "check-coverage": true

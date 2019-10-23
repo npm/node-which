@@ -1,5 +1,6 @@
 # Changes
 
+* Rename which to node-which
 
 ## 2.0.1
 
