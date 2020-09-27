@@ -9,30 +9,15 @@ needed when the PATH changes.
 ## USAGE
 
 ```javascript
-var which = require('which')
+const which = require('which')
 
-// async usage
-which('node', function (er, resolvedPath) {
-  // er is returned if no "node" is found on the PATH
-  // if it is found, then the absolute path to the exec is returned
-})
+const resolvedPath = await which('node') // Also supports callback
 
-// or promise
-which('node').then(resolvedPath => { ... }).catch(er => { ... not found ... })
+console.log(resolvedPath)
 
-// sync usage
-// throws if not found
-var resolved = which.sync('node')
+const resolved = which.sync('node', {nothrow: true, path: someOtherPath}) // Override PATH and PATHEXT by setting `path`
 
-// if nothrow option is used, returns null if not found
-resolved = which.sync('node', {nothrow: true})
-
-// Pass options to override the PATH and PATHEXT environment vars.
-which('node', { path: someOtherPath }, function (er, resolved) {
-  if (er)
-    throw er
-  console.log('found at %j', resolved)
-})
+console.log(resolved)
 ```
 
 ## CLI USAGE
