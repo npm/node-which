@@ -18,13 +18,13 @@
   "devDependencies": {
     "mkdirp": "^0.5.0",
     "rimraf": "^2.6.2",
-    "tap": "^14.6.9"
+    "tap": "^16.0.1"
   },
   "scripts": {
     "test": "tap",
     "preversion": "npm test",
     "postversion": "npm publish",
-    "prepublish": "npm run changelog",
+    "prepublishOnly": "npm run changelog",
     "prechangelog": "bash gen-changelog.sh",
     "changelog": "git add CHANGELOG.md",
     "postchangelog": "git commit -m 'update changelog - '${npm_package_version}",

@@ -40,7 +40,7 @@ t.test('does not find non-executable', skip, function (t) {
   t.test('absolute', function (t) {
     t.plan(3)
     which(fixture + '/foo.sh', function (er) {
-      t.isa(er, Error)
+      t.type(er, Error)
       t.equal(er.code, 'ENOENT')
     })
 
@@ -52,7 +52,7 @@ t.test('does not find non-executable', skip, function (t) {
   t.test('with path', function (t) {
     t.plan(3)
     which('foo.sh', { path: fixture }, function (er) {
-      t.isa(er, Error)
+      t.type(er, Error)
       t.equal(er.code, 'ENOENT')
     })
 
