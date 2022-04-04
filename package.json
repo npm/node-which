@@ -24,7 +24,7 @@
     "test": "tap",
     "preversion": "npm test",
     "postversion": "npm publish",
-    "prepublish": "npm run changelog",
+    "prepublishOnly": "npm run changelog",
     "prechangelog": "bash gen-changelog.sh",
     "changelog": "git add CHANGELOG.md",
     "postchangelog": "git commit -m 'update changelog - '${npm_package_version}",
