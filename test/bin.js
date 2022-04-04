@@ -96,7 +96,7 @@ t.test('cli flags', function (t) {
           if (process.platform === 'win32') {
             opt.skip = 'windows does not have builtin "which"'
           }
-          t.ok(out.length > 1, 'should have more than 1 result', opt)
+          t.ok(out.length > 0, 'should have a result', opt)
         }
         t.end()
       })
