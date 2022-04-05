@@ -20,7 +20,7 @@ var args = process.argv.slice(2).filter(function (arg) {
     return false
   }
 
-  var flags = arg.substr(1).split('')
+  var flags = arg.slice(1).split('')
   for (var f = 0; f < flags.length; f++) {
     var flag = flags[f]
     switch (flag) {
