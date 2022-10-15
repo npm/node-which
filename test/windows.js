@@ -1,6 +1,6 @@
 // pretend to be Windows.
 if (process.platform === 'win32') {
-  var t = require('tap')
+  const t = require('tap')
   t.plan(0, 'already on windows')
   process.exit(0)
 }

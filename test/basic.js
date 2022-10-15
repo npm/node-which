@@ -1,193 +1,128 @@
-var t = require('tap')
-var fs = require('fs')
-var rimraf = require('rimraf')
-var mkdirp = require('mkdirp')
-const fixdir = `'/fixture-${(+process.env.TAP_CHILD_ID || 0)}`
-var fixture = `${__dirname}/${fixdir}`
-var which = require('../which.js')
-var path = require('path')
 
-var isWindows = process.platform === 'win32' ||
-    process.env.OSTYPE === 'cygwin' ||
-    process.env.OSTYPE === 'msys'
+const t = require('tap')
+const fs = require('fs')
+const rimraf = require('rimraf')
+const mkdirp = require('mkdirp')
+const { basename, join, relative, sep } = require('path')
+const which = require('..')
+const { isWindows, delimiter } = require('../lib/is-windows.js')
 
-var skip = { skip: isWindows ? 'not relevant on windows' : false }
+const fixdir = `fixture-${(+process.env.TAP_CHILD_ID || 0)}`
+const fixture = join(__dirname, fixdir)
+const foo = join(fixture, 'foo.sh')
 
-t.test('setup', function (t) {
+const skip = { skip: isWindows ? 'not relevant on windows' : false }
+
+t.before(() => {
   rimraf.sync(fixture)
   mkdirp.sync(fixture)
-  fs.writeFileSync(fixture + '/foo.sh', 'echo foo\n')
-  t.end()
+  fs.writeFileSync(foo, 'echo foo\n')
 })
 
-t.test('does not find missed', function(t) {
-  t.plan(3)
-
-  t.rejects(which(fixture + '/foobar.sh'), {
-    code: 'ENOENT',
-  })
-
-  t.throws(function () {
-    which.sync(fixture + '/foobar.sh')
-  }, {code: 'ENOENT'})
-
-  t.equal(which.sync(fixture + '/foobar.sh', {nothrow:true}), null)
+t.teardown(() => {
+  rimraf.sync(fixture)
 })
 
-t.test('does not find non-executable', skip, function (t) {
-  t.plan(2)
+t.test('does not find missed', async (t) => {
+  const p = join(fixture, 'foobar.sh')
+  await t.rejects(() => which(p), { code: 'ENOENT' })
+  t.equal(await which(p, { nothrow: true }), null)
 
-  t.test('absolute', function (t) {
-    t.plan(3)
-    which(fixture + '/foo.sh', function (er) {
-      t.type(er, Error)
-      t.equal(er.code, 'ENOENT')
-    })
+  t.throws(() => which.sync(p), { code: 'ENOENT' })
+  t.equal(which.sync(p, { nothrow: true }), null)
+})
 
-    t.throws(function () {
-      which.sync(fixture + '/foo.sh')
-    }, {code: 'ENOENT'})
+t.test('does not find non-executable', skip, async (t) => {
+  t.test('absolute', async (t) => {
+    await t.rejects(() => which(foo), { code: 'ENOENT' })
+    t.throws(() => which.sync(foo), { code: 'ENOENT' })
   })
 
-  t.test('with path', function (t) {
-    t.plan(3)
-    which('foo.sh', { path: fixture }, function (er) {
-      t.type(er, Error)
-      t.equal(er.code, 'ENOENT')
-    })
-
-    t.throws(function () {
-      which.sync('foo.sh', { path: fixture })
-    }, {code: 'ENOENT'})
+  t.test('with path', async (t) => {
+    await t.rejects(() => which(basename(foo), { path: fixture }), { code: 'ENOENT' })
+    t.throws(() => which.sync(basename(foo), { path: fixture }), { code: 'ENOENT' })
   })
 })
 
-t.test('make executable', function (t) {
-  fs.chmodSync(fixture + '/foo.sh', '0755')
-  t.end()
-})
+t.test('find when executable', async (t) => {
+  t.before(() => fs.chmodSync(foo, '0755'))
 
-t.test('find when executable', function (t) {
-  var opt = { pathExt: '.sh' }
-  var expect = path.resolve(fixture, 'foo.sh').toLowerCase()
-  var PATH = process.env.PATH
-
-  t.test('absolute', function (t) {
-    runTest(fixture + '/foo.sh', t)
+  const PATH = process.env.PATH
+  const PATHEXT = process.env.PATHEXT
+  t.afterEach(() => {
+    process.env.PATH = PATH
+    process.env.PATHEXT = PATHEXT
   })
 
-  t.test('with process.env.PATH', function (t) {
-    process.env.PATH = fixture
-    runTest('foo.sh', t)
-  })
+  const runTest = async (exec, expect, t, opt = {}) => {
+    opt.pathExt = '.sh'
+    const found = which.sync(exec, opt).toLowerCase()
+    t.equal(found, expect.toLowerCase())
 
-  t.test('with pathExt', {
-    skip: isWindows ? false : 'Only for Windows'
-  }, function (t) {
-    var pe = process.env.PATHEXT
-    process.env.PATHEXT = '.SH'
-    process.env.PATH = fixture
-
-    t.test('foo.sh', function (t) {
-      process.env.PATH = fixture
-      runTest('foo.sh', t)
-    })
-    t.test('foo', function (t) {
-      process.env.PATH = fixture
-      runTest('foo', t)
-    })
-    t.test('replace', function (t) {
-      process.env.PATHEXT = pe
-      t.end()
-    })
-    t.end()
-  })
-
-  t.test('with path opt', function (t) {
-    opt.path = fixture
-    runTest('foo.sh', t)
-  })
-
-  t.test('relative path', function (t) {
-    var opt = { pathExt: '.sh' }
-    var expect = path.join(`test/${fixdir}/foo.sh`)
-    t.plan(3)
-
-    t.test('no ./', function (t) {
-      t.plan(2)
-      var actual = which.sync(`test/${fixdir}/foo.sh`, opt)
-      t.equal(actual, expect)
-      which(`test/${fixdir}/foo.sh`, opt, function (er, actual) {
-        if (er)
-          throw er
-        t.equal(actual, expect)
-      })
-    })
-
-    t.test('with ./', function (t) {
-      t.plan(2)
-      expect = './' + expect
-      var actual = which.sync(`./test/${fixdir}/foo.sh`, opt)
-      t.equal(actual, expect)
-      which(`./test/${fixdir}/foo.sh`, opt, function (er, actual) {
-        if (er)
-          throw er
-        t.equal(actual, expect)
-      })
-    })
-
-    t.test('with ../', function (t) {
-      t.plan(2)
-      var dir = path.basename(process.cwd())
-      expect = path.join('..', dir, `test/${fixdir}/foo.sh`)
-      var actual = which.sync(expect, opt)
-      t.equal(actual, expect)
-      which(expect, opt, function (er, actual) {
-        if (er)
-          throw er
-        t.equal(actual, expect)
-      })
-    })
-  })
-
-  function runTest(exec, t) {
-    t.plan(2)
-
-    var found = which.sync(exec, opt).toLowerCase()
-    t.equal(found, expect)
-
-    which(exec, opt, function (er, found) {
-      if (er)
-        throw er
-      t.equal(found.toLowerCase(), expect)
-      t.end()
-      process.env.PATH = PATH
-    })
+    const res = await which(exec, opt)
+    t.equal(res.toLowerCase(), expect.toLowerCase())
   }
 
-  t.end()
+  t.test('absolute', async (t) => {
+    return runTest(foo, foo, t)
+  })
+
+  t.test('with process.env.PATH', async (t) => {
+    process.env.PATH = fixture
+    return runTest(basename(foo), foo, t)
+  })
+
+  t.test('with pathExt', { skip: isWindows ? false : 'Only for Windows' }, async (t) => {
+    t.test('foo.sh', async (t) => {
+      process.env.PATHEXT = '.SH'
+      process.env.PATH = fixture
+      return runTest(basename(foo), foo, t)
+    })
+
+    t.test('foo', async (t) => {
+      process.env.PATHEXT = '.SH'
+      process.env.PATH = fixture
+      return runTest(basename(foo, '.sh'), foo, t)
+    })
+  })
+
+  t.test('with path opt', async (t) => {
+    return runTest(basename(foo), foo, t, { path: fixture })
+  })
+
+  t.test('no ./', async (t) => {
+    const rel = relative(process.cwd(), foo)
+    return runTest(rel, rel, t)
+  })
+
+  t.test('with ./', async (t) => {
+    const rel = `.${sep}${relative(process.cwd(), foo)}`
+    return runTest(rel, rel, t)
+  })
+
+  t.test('with ../', async (t) => {
+    const dir = basename(process.cwd())
+    const rel = join('..', dir, relative(process.cwd(), foo))
+    return runTest(rel, rel, t)
+  })
 })
 
-t.test('find all', t => {
+t.test('find all', async t => {
   mkdirp.sync(`${fixture}/all/a`)
   mkdirp.sync(`${fixture}/all/b`)
   fs.writeFileSync(`${fixture}/all/a/x.cmd`, 'exec me')
   fs.writeFileSync(`${fixture}/all/b/x.cmd`, 'exec me')
   fs.chmodSync(`${fixture}/all/a/x.cmd`, 0o755)
   fs.chmodSync(`${fixture}/all/b/x.cmd`, 0o755)
+
   const opt = {
-    path: `${fixture}/all/a:"${fixture}/all/b"`,
-    colon: ':',
+    path: [`${fixture}/all/a`, `"${fixture}/all/b"`].join(delimiter),
     all: true,
   }
-  const allsync = which.sync('x.cmd', opt)
-  t.same(allsync, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
-  return which('x.cmd', opt).then(all => {
-    t.same(all, [`${fixture}/all/a/x.cmd`, `${fixture}/all/b/x.cmd`])
-  })
-})
-
-t.test('clean', function (t) {
-  rimraf.sync(fixture)
-  t.end()
+  const expect = [
+    join(fixture, 'all', 'a', 'x.cmd'),
+    join(fixture, 'all', 'b', 'x.cmd'),
+  ]
+  t.same(which.sync('x.cmd', opt), expect)
+  t.same(await which('x.cmd', opt), expect)
 })
