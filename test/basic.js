@@ -3,15 +3,12 @@ const t = require('tap')
 const fs = require('fs')
 const rimraf = require('rimraf')
 const mkdirp = require('mkdirp')
-const { basename, join, relative, sep } = require('path')
+const { basename, join, relative, sep, delimiter } = require('path')
 const which = require('..')
-const { isWindows, delimiter } = require('../lib/is-windows.js')
 
 const fixdir = `fixture-${(+process.env.TAP_CHILD_ID || 0)}`
 const fixture = join(__dirname, fixdir)
 const foo = join(fixture, 'foo.sh')
-
-const skip = { skip: isWindows ? 'not relevant on windows' : false }
 
 t.before(() => {
   rimraf.sync(fixture)
@@ -32,7 +29,7 @@ t.test('does not find missed', async (t) => {
   t.equal(which.sync(p, { nothrow: true }), null)
 })
 
-t.test('does not find non-executable', skip, async (t) => {
+t.test('does not find non-executable', async (t) => {
   t.test('absolute', async (t) => {
     await t.rejects(() => which(foo), { code: 'ENOENT' })
     t.throws(() => which.sync(foo), { code: 'ENOENT' })
@@ -47,20 +44,39 @@ t.test('does not find non-executable', skip, async (t) => {
 t.test('find when executable', async (t) => {
   t.before(() => fs.chmodSync(foo, '0755'))
 
-  const PATH = process.env.PATH
-  const PATHEXT = process.env.PATHEXT
+  const { PATH, PATHEXT, OSTYPE } = process.env
   t.afterEach(() => {
-    process.env.PATH = PATH
-    process.env.PATHEXT = PATHEXT
+    if (PATH) {
+      process.env.PATH = PATH
+    } else {
+      delete process.env.PATH
+    }
+    if (PATHEXT) {
+      process.env.PATHEXT = PATHEXT
+    } else {
+      delete process.env.PATHEXT
+    }
+    if (OSTYPE) {
+      process.env.OSTYPE = OSTYPE
+    } else {
+      delete process.env.OSTYPE
+    }
   })
 
   const runTest = async (exec, expect, t, opt = {}) => {
     opt.pathExt = '.sh'
-    const found = which.sync(exec, opt).toLowerCase()
-    t.equal(found, expect.toLowerCase())
+    const _which = t.mock('..')
 
-    const res = await which(exec, opt)
-    t.equal(res.toLowerCase(), expect.toLowerCase())
+    if (typeof expect === 'string') {
+      const found = _which.sync(exec, opt).toLowerCase()
+      t.equal(found, expect.toLowerCase())
+
+      const res = await _which(exec, opt)
+      t.equal(res.toLowerCase(), expect.toLowerCase())
+    } else {
+      await t.rejects(() => _which(exec), expect)
+      t.throws(() => _which.sync(exec), expect)
+    }
   }
 
   t.test('absolute', async (t) => {
@@ -72,17 +88,25 @@ t.test('find when executable', async (t) => {
     return runTest(basename(foo), foo, t)
   })
 
-  t.test('with pathExt', { skip: isWindows ? false : 'Only for Windows' }, async (t) => {
+  t.test('pathExt', async (t) => {
     t.test('foo.sh', async (t) => {
+      process.env.OSTYPE = 'cygwin'
       process.env.PATHEXT = '.SH'
       process.env.PATH = fixture
       return runTest(basename(foo), foo, t)
     })
 
     t.test('foo', async (t) => {
+      process.env.OSTYPE = 'cygwin'
       process.env.PATHEXT = '.SH'
       process.env.PATH = fixture
       return runTest(basename(foo, '.sh'), foo, t)
+    })
+
+    t.test('foo nopathext', async (t) => {
+      process.env.OSTYPE = 'cygwin'
+      process.env.PATH = fixture
+      return runTest(basename(foo, '.sh'), { code: 'ENOENT' }, t)
     })
   })
 
