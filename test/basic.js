@@ -4,11 +4,13 @@ const fs = require('fs')
 const rimraf = require('rimraf')
 const mkdirp = require('mkdirp')
 const { basename, join, relative, sep, delimiter } = require('path')
-const which = require('..')
 
 const fixdir = `fixture-${(+process.env.TAP_CHILD_ID || 0)}`
 const fixture = join(__dirname, fixdir)
 const foo = join(fixture, 'foo.sh')
+
+const which = (...args) => t.mock('..')(...args)
+which.sync = (...args) => t.mock('..').sync(...args)
 
 t.before(() => {
   rimraf.sync(fixture)
@@ -44,7 +46,7 @@ t.test('does not find non-executable', async (t) => {
 t.test('find when executable', async (t) => {
   t.before(() => fs.chmodSync(foo, '0755'))
 
-  const { PATH, PATHEXT, OSTYPE } = process.env
+  const { PATH, PATHEXT } = process.env
   t.afterEach(() => {
     if (PATH) {
       process.env.PATH = PATH
@@ -56,26 +58,20 @@ t.test('find when executable', async (t) => {
     } else {
       delete process.env.PATHEXT
     }
-    if (OSTYPE) {
-      process.env.OSTYPE = OSTYPE
-    } else {
-      delete process.env.OSTYPE
-    }
+    delete process.env.WHICH_FAKE_PLATFORM
   })
 
   const runTest = async (exec, expect, t, opt = {}) => {
     opt.pathExt = '.sh'
-    const _which = t.mock('..')
-
     if (typeof expect === 'string') {
-      const found = _which.sync(exec, opt).toLowerCase()
+      const found = which.sync(exec, opt).toLowerCase()
       t.equal(found, expect.toLowerCase())
 
-      const res = await _which(exec, opt)
+      const res = await which(exec, opt)
       t.equal(res.toLowerCase(), expect.toLowerCase())
     } else {
-      await t.rejects(() => _which(exec), expect)
-      t.throws(() => _which.sync(exec), expect)
+      await t.rejects(() => which(exec), expect)
+      t.throws(() => which.sync(exec), expect)
     }
   }
 
@@ -90,21 +86,21 @@ t.test('find when executable', async (t) => {
 
   t.test('pathExt', async (t) => {
     t.test('foo.sh', async (t) => {
-      process.env.OSTYPE = 'cygwin'
+      process.env.WHICH_FAKE_PLATFORM = 'win32'
       process.env.PATHEXT = '.SH'
       process.env.PATH = fixture
       return runTest(basename(foo), foo, t)
     })
 
     t.test('foo', async (t) => {
-      process.env.OSTYPE = 'cygwin'
+      process.env.WHICH_FAKE_PLATFORM = 'win32'
       process.env.PATHEXT = '.SH'
       process.env.PATH = fixture
       return runTest(basename(foo, '.sh'), foo, t)
     })
 
     t.test('foo nopathext', async (t) => {
-      process.env.OSTYPE = 'cygwin'
+      process.env.WHICH_FAKE_PLATFORM = 'win32'
       process.env.PATH = fixture
       return runTest(basename(foo, '.sh'), { code: 'ENOENT' }, t)
     })
