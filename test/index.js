@@ -3,6 +3,7 @@ const t = require('tap')
 const fs = require('fs')
 const { basename, join, relative, sep, posix, win32 } = require('path')
 
+const DELIMITER = (p) => p === 'win32' ? win32.delimiter : posix.delimiter
 const envVars = { PATH: process.env.PATH, PATHEXT: process.env.PATHEXT }
 
 const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ...opt } = {}) => {
@@ -20,9 +21,8 @@ const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ...opt
     t.test(`${t.name} - ${platform}`, async t => {
       const platformOpt = Object.keys(opt).length ? {
         ...opt,
-        ...Array.isArray(opt.path)
-          ? { path: opt.path.join(platform === 'win32' ? win32.delimiter : posix.delimiter) }
-          : {},
+        ...Array.isArray(opt.path) ? { path: opt.path.join(DELIMITER(platform)) } : {},
+        ...Array.isArray(opt.pathExt) ? { pathExt: opt.pathExt.join(DELIMITER(platform)) } : {},
       } : undefined
 
       const which = t.mock('..', { '../lib/is-windows.js': platform === 'win32' })
@@ -119,11 +119,11 @@ t.test('find all', async t => {
     join(fixture, 'all', 'a'),
     join(fixture, 'all', 'b'),
   ]
-  const cmds = dirs.map(dir => join(dir, cmdName))
-  for (const cmd of cmds) {
+  const cmds = dirs.map(dir => {
+    const cmd = join(dir, cmdName)
     fs.chmodSync(cmd, 0o755)
-  }
-
+    return cmd
+  })
   await runTest(t, cmdName, cmds, {
     all: true,
     path: dirs.map((dir, index) => index % 2 ? dir : `"${dir}"`),
@@ -135,15 +135,28 @@ t.test('pathExt', async (t) => {
   const foo = join(fixture, 'foo.sh')
   fs.chmodSync(foo, '0755')
 
-  t.test('foo.sh', async (t) => {
-    process.env.PATHEXT = '.SH'
+  const pathExt = '.SH;.sh'
+  const opts = {
+    platforms: ['win32'],
+  }
+
+  t.test('foo.sh - env vars', async (t) => {
+    process.env.PATHEXT = pathExt
     process.env.PATH = fixture
-    await runTest(t, basename(foo), foo, { platforms: ['win32'] })
+    await runTest(t, basename(foo), foo, opts)
   })
 
-  t.test('foo', async (t) => {
-    process.env.PATHEXT = '.SH'
+  t.test('foo.sh - opts', async (t) => {
+    await runTest(t, basename(foo), foo, { ...opts, path: fixture, pathExt })
+  })
+
+  t.test('foo - env vars', async (t) => {
+    process.env.PATHEXT = pathExt
     process.env.PATH = fixture
-    await runTest(t, basename(foo, '.sh'), foo, { platforms: ['win32'] })
+    await runTest(t, basename(foo, '.sh'), foo, opts)
+  })
+
+  t.test('foo - opts', async (t) => {
+    await runTest(t, basename(foo, '.sh'), foo, { ...opts, path: fixture, pathExt })
   })
 })

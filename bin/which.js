@@ -16,7 +16,7 @@ if (!argv.length) {
 }
 
 let dashdash = false
-const [cmds, flags] = argv.reduce((acc, arg) => {
+const [commands, flags] = argv.reduce((acc, arg) => {
   if (dashdash || arg === '--') {
     dashdash = true
     return acc
@@ -40,9 +40,9 @@ const [cmds, flags] = argv.reduce((acc, arg) => {
   return acc
 }, [[], {}])
 
-for (const cmd of cmds) {
+for (const command of commands) {
   try {
-    const res = which.sync(cmd, { all: flags.all })
+    const res = which.sync(command, { all: flags.all })
     if (!flags.silent) {
       console.log([].concat(res).join('\n'))
     }
