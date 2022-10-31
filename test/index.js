@@ -42,10 +42,8 @@ const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ..._op
       } else {
         const res = await which(exec, opt)
         const resSync = which.sync(exec, opt)
-        // use jsonstringify so it works for null and strings
-        const value = (v) => JSON.stringify(v).toLowerCase()
-        t.strictSame(value(res), value(expect), 'async')
-        t.strictSame(value(resSync), value(expect), 'sync')
+        t.strictSame(res, expect, 'async')
+        t.strictSame(resSync, expect, 'sync')
       }
     })
   }
@@ -141,7 +139,7 @@ t.test('pathExt', async (t) => {
   const foo = join(fixture, 'foo.sh')
   fs.chmodSync(foo, '0755')
 
-  const pathExt = '.SH'
+  const pathExt = '.sh'
   const opts = { platforms: ['win32'] }
 
   t.test('foo.sh - env vars', async (t) => {
