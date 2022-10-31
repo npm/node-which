@@ -2,13 +2,14 @@
 const t = require('tap')
 const fs = require('fs')
 const { basename, join, relative, sep, delimiter } = require('path')
-const realWindows = process.platform === 'win32'
+const isWindows = process.platform === 'win32'
 
-const envVars = { PATH: process.env.PATH, PATHEXT: process.env.PATHEXT }
+const ENV_VARS = { PATH: process.env.PATH, PATHEXT: process.env.PATHEXT }
+const PLATFORM = Object.getOwnPropertyDescriptor(process, 'platform')
 
 const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ..._opt } = {}) => {
   t.teardown(() => {
-    for (const [k, v] of Object.entries(envVars)) {
+    for (const [k, v] of Object.entries(ENV_VARS)) {
       if (v) {
         process.env[k] = v
       } else {
@@ -19,31 +20,32 @@ const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ..._op
 
   for (const platform of platforms) {
     t.test(`${t.name} - ${platform}`, async t => {
+      Object.defineProperty(process, 'platform', { ...PLATFORM, value: platform })
+
+      t.teardown(() => {
+        Object.defineProperty(process, 'platform', PLATFORM)
+      })
+
       // pass in undefined if there are no opts to test default argß
       const opt = Object.keys(_opt).length ? { ..._opt } : undefined
 
-      // mock windows detections
-      const mocks = { '../lib/is-windows.js': platform === 'win32' }
-
       // if we are actually on windows but testing posix we have to
       // mock isexe since that has special windows detection inside
-      // of it. this is mostly to get 100% coverage on windowsß
-      if (realWindows && platform === 'posix') {
+      // of it. this is mostly to get 100% coverage on windows
+      const mocks = {}
+      if (isWindows && platform === 'posix') {
         const isexe = async (p) => [].concat(expect).includes(p)
         isexe.sync = (p) => [].concat(expect).includes(p)
         mocks.isexe = isexe
       }
 
       const which = t.mock('..', mocks)
-
       if (expect?.code) {
         await t.rejects(() => which(exec, opt), expect, 'async rejects')
         t.throws(() => which.sync(exec, opt), expect, 'sync throws')
       } else {
-        const res = await which(exec, opt)
-        const resSync = which.sync(exec, opt)
-        t.strictSame(res, expect, 'async')
-        t.strictSame(resSync, expect, 'sync')
+        t.strictSame(await which(exec, opt), expect, 'async')
+        t.strictSame(which.sync(exec, opt), expect, 'sync')
       }
     })
   }
@@ -79,7 +81,8 @@ t.test('find when executable', async t => {
   const foo = join(fixture, 'foo.sh')
   fs.chmodSync(foo, '0755')
 
-  const opts = realWindows ? { pathExt: '.sh' } : {}
+  // windows needs to explicitly look for .sh files by default
+  const opts = isWindows ? { pathExt: '.sh' } : {}
 
   t.test('absolute', async (t) => {
     await runTest(t, foo, foo, opts)
