@@ -1,12 +1,12 @@
 
 const t = require('tap')
 const fs = require('fs')
-const { basename, join, relative, sep, posix, win32 } = require('path')
+const { basename, join, relative, sep, delimiter } = require('path')
+const realWindows = process.platform === 'win32'
 
-const DELIMITER = (p) => p === 'win32' ? win32.delimiter : posix.delimiter
 const envVars = { PATH: process.env.PATH, PATHEXT: process.env.PATHEXT }
 
-const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ...opt } = {}) => {
+const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ..._opt } = {}) => {
   t.teardown(() => {
     for (const [k, v] of Object.entries(envVars)) {
       if (v) {
@@ -19,29 +19,33 @@ const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ...opt
 
   for (const platform of platforms) {
     t.test(`${t.name} - ${platform}`, async t => {
-      const platformOpt = Object.keys(opt).length ? {
-        ...opt,
-        ...Array.isArray(opt.path) ? { path: opt.path.join(DELIMITER(platform)) } : {},
-        ...Array.isArray(opt.pathExt) ? { pathExt: opt.pathExt.join(DELIMITER(platform)) } : {},
-      } : undefined
+      // pass in undefined if there are no opts to test default argß
+      const opt = Object.keys(_opt).length ? { ..._opt } : undefined
 
-      const which = t.mock('..', { '../lib/is-windows.js': platform === 'win32' })
+      // mock windows detections
+      const mocks = { '../lib/is-windows.js': platform === 'win32' }
 
-      if (expect?.code) {
-        await t.rejects(() => which(exec, platformOpt), expect, 'async rejects')
-        t.throws(() => which.sync(exec, platformOpt), expect, 'sync throws')
-        return
+      // if we are actually on windows but testing posix we have to
+      // mock isexe since that has special windows detection inside
+      // of it. this is mostly to get 100% coverage on windowsß
+      if (realWindows && platform === 'posix') {
+        const isexe = async (p) => [].concat(expect).includes(p)
+        isexe.sync = (p) => [].concat(expect).includes(p)
+        mocks.isexe = isexe
       }
 
-      const syncRes = which.sync(exec, platformOpt)
-      const res = await which(exec, platformOpt)
+      const which = t.mock('..', mocks)
 
-      if (typeof expect === 'string') {
-        t.strictSame(syncRes.toLowerCase(), expect.toLowerCase(), 'sync')
-        t.strictSame(res.toLowerCase(), expect.toLowerCase(), 'async')
+      if (expect?.code) {
+        await t.rejects(() => which(exec, opt), expect, 'async rejects')
+        t.throws(() => which.sync(exec, opt), expect, 'sync throws')
       } else {
-        t.strictSame(syncRes, expect, 'sync')
-        t.strictSame(res, expect, 'async')
+        const res = await which(exec, opt)
+        const resSync = which.sync(exec, opt)
+        // use jsonstringify so it works for null and strings
+        const value = (v) => JSON.stringify(v).toLowerCase()
+        t.strictSame(value(res), value(expect), 'async')
+        t.strictSame(value(resSync), value(expect), 'sync')
       }
     })
   }
@@ -77,33 +81,35 @@ t.test('find when executable', async t => {
   const foo = join(fixture, 'foo.sh')
   fs.chmodSync(foo, '0755')
 
+  const opts = realWindows ? { pathExt: '.sh' } : {}
+
   t.test('absolute', async (t) => {
-    await runTest(t, foo, foo)
+    await runTest(t, foo, foo, opts)
   })
 
   t.test('with process.env.PATH', async (t) => {
     process.env.PATH = fixture
-    await runTest(t, basename(foo), foo)
+    await runTest(t, basename(foo), foo, opts)
   })
 
   t.test('with path opt', async (t) => {
-    await runTest(t, basename(foo), foo, { path: fixture })
+    await runTest(t, basename(foo), foo, { ...opts, path: fixture })
   })
 
   t.test('no ./', async (t) => {
     const rel = relative(process.cwd(), foo)
-    await runTest(t, rel, rel)
+    await runTest(t, rel, rel, opts)
   })
 
   t.test('with ./', async (t) => {
     const rel = `.${sep}${relative(process.cwd(), foo)}`
-    await runTest(t, rel, rel)
+    await runTest(t, rel, rel, opts)
   })
 
   t.test('with ../', async (t) => {
     const dir = basename(process.cwd())
     const rel = join('..', dir, relative(process.cwd(), foo))
-    await runTest(t, rel, rel)
+    await runTest(t, rel, rel, opts)
   })
 })
 
@@ -126,7 +132,7 @@ t.test('find all', async t => {
   })
   await runTest(t, cmdName, cmds, {
     all: true,
-    path: dirs.map((dir, index) => index % 2 ? dir : `"${dir}"`),
+    path: dirs.map((dir, index) => index % 2 ? dir : `"${dir}"`).join(delimiter),
   })
 })
 
@@ -135,10 +141,8 @@ t.test('pathExt', async (t) => {
   const foo = join(fixture, 'foo.sh')
   fs.chmodSync(foo, '0755')
 
-  const pathExt = '.SH;.sh'
-  const opts = {
-    platforms: ['win32'],
-  }
+  const pathExt = '.SH'
+  const opts = { platforms: ['win32'] }
 
   t.test('foo.sh - env vars', async (t) => {
     process.env.PATHEXT = pathExt
@@ -158,5 +162,13 @@ t.test('pathExt', async (t) => {
 
   t.test('foo - opts', async (t) => {
     await runTest(t, basename(foo, '.sh'), foo, { ...opts, path: fixture, pathExt })
+  })
+
+  t.test('foo - no pathext', async (t) => {
+    await runTest(t, basename(foo, '.sh'), { code: 'ENOENT' }, {
+      ...opts,
+      path: fixture,
+      pathExt: '',
+    })
   })
 })
