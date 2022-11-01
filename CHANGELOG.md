@@ -1,5 +1,4 @@
-# Changes
-
+# Changelog
 
 ## 2.0.2
 

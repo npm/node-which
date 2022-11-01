@@ -1,125 +1,118 @@
-var t = require('tap')
-var spawn = require('child_process').spawn
-var node = process.execPath
-var bin = require.resolve('../bin/node-which')
+const t = require('tap')
+const spawn = require('child_process').spawn
 
-function which (args, extraPath, cb) {
-  if (typeof extraPath === 'function')
-    cb = extraPath, extraPath = null
+const node = process.execPath
+const bin = require.resolve('../bin/which.js')
 
-  var options = {}
+function which (args, extraPath) {
+  const options = {}
+
   if (extraPath) {
-    var sep = process.platform === 'win32' ? ';' : ':'
-    var p = process.env.PATH + sep + extraPath
+    const sep = process.platform === 'win32' ? ';' : ':'
+    const p = process.env.PATH + sep + extraPath
     options.env = Object.keys(process.env).reduce(function (env, k) {
-      if (!k.match(/^path$/i))
+      if (!k.match(/^path$/i)) {
         env[k] = process.env[k]
+      }
       return env
     }, { PATH: p })
   }
 
-  var out = ''
-  var err = ''
-  var child = spawn(node, [bin].concat(args), options)
-  child.stdout.on('data', function (c) {
-    out += c
-  })
-  child.stderr.on('data', function (c) {
-    err += c
-  })
-  child.on('close', function (code, signal) {
-    cb(code, signal, out.trim(), err.trim())
+  return new Promise((res) => {
+    let out = ''
+    let err = ''
+    const child = spawn(node, [bin].concat(args).filter(Boolean), options)
+    child.stdout.on('data', (c) => out += c)
+    child.stderr.on('data', (c) => err += c)
+    child.on('close', (code, signal) => {
+      out = out.trim()
+      err = err.trim()
+      res({ code, signal, out, err })
+    })
   })
 }
 
-t.test('finds node', function (t) {
-  which('node', function (code, signal, out, err) {
-    t.equal(signal, null)
-    t.equal(code, 0)
-    t.equal(err, '')
-    t.match(out, /[\\\/]node(\.exe)?$/i)
-    t.end()
-  })
+t.test('finds node', async (t) => {
+  const { code, signal, out, err } = await which('node')
+  t.equal(signal, null)
+  t.equal(code, 0)
+  t.equal(err, '')
+  t.match(out, /[\\/]node(\.exe)?$/i)
 })
 
-t.test('does not find flergyderp', function (t) {
-  which('flergyderp', function (code, signal, out, err) {
-    t.equal(signal, null)
-    t.equal(code, 1)
-    t.equal(err, '')
-    t.match(out, '')
-    t.end()
-  })
+t.test('does not find flergyderp', async (t) => {
+  const { code, signal, out, err } = await which('flergyderp')
+  t.equal(signal, null)
+  t.equal(code, 1)
+  t.equal(err, '')
+  t.match(out, '')
 })
 
-t.test('finds node and tap', function (t) {
-  which(['node', 'tap'], function (code, signal, out, err) {
-    t.equal(signal, null)
-    t.equal(code, 0)
-    t.equal(err, '')
-    t.match(out.split(/[\r\n]+/), [
-      /[\\\/]node(\.exe)?$/i,
-      /[\\\/]tap(\.cmd)?$/i
-    ])
-    t.end()
-  })
+t.test('finds node and tap', async (t) => {
+  const { code, signal, out, err } = await which(['node', 'tap'])
+  t.equal(signal, null)
+  t.equal(code, 0)
+  t.equal(err, '')
+  t.match(out.split(/[\r\n]+/), [
+    /[\\/]node(\.exe)?$/i,
+    /[\\/]tap(\.cmd)?$/i,
+  ])
 })
 
-t.test('finds node and tap, but not flergyderp', function (t) {
-  which(['node', 'flergyderp', 'tap'], function (code, signal, out, err) {
-    t.equal(signal, null)
-    t.equal(code, 1)
-    t.equal(err, '')
-    t.match(out.split(/[\r\n]+/), [
-      /[\\\/]node(\.exe)?$/i,
-      /[\\\/]tap(\.cmd)?$/i
-    ])
-    t.end()
-  })
+t.test('finds node and tap, but not flergyderp', async (t) => {
+  const { code, signal, out, err } = await which(['node', 'flergyderp', 'tap'])
+  t.equal(signal, null)
+  t.equal(code, 1)
+  t.equal(err, '')
+  t.match(out.split(/[\r\n]+/), [
+    /[\\/]node(\.exe)?$/i,
+    /[\\/]tap(\.cmd)?$/i,
+  ])
 })
 
-t.test('cli flags', function (t) {
-  var p = require('path').dirname(bin)
-  var cases = [ '-a', '-s', '-as', '-sa' ]
-  t.plan(cases.length)
-  cases.forEach(function (c) {
-    t.test(c, function (t) {
-      which(['which', c], p, function (code, signal, out, err) {
-        t.equal(signal, null)
-        t.equal(code, 0)
-        t.equal(err, '')
-        if (/s/.test(c))
-          t.equal(out, '', 'should be silent')
-        else if (/a/.test(c)) {
-          out = out.split(/[\r\n]+/)
-          var opt = { actual: out }
-          if (process.platform === 'win32') {
-            opt.skip = 'windows does not have builtin "which"'
-          }
-          t.ok(out.length > 0, 'should have a result', opt)
+t.test('cli flags', async (t) => {
+  const p = require('path').dirname(bin)
+
+  for (const c of ['-a', '-s', '-as', '-sa']) {
+    t.test(c, async (t) => {
+      let { code, signal, out, err } = await which(['which', c], p)
+      t.equal(signal, null)
+      t.equal(code, 0)
+      t.equal(err, '')
+      if (/s/.test(c)) {
+        t.equal(out, '', 'should be silent')
+      } else if (/a/.test(c)) {
+        out = out.split(/[\r\n]+/)
+        const opt = { actual: out }
+        if (process.platform === 'win32') {
+          opt.skip = 'windows does not have builtin "which"'
         }
-        t.end()
-      })
+        t.ok(out.length > 0, 'should have a result', opt)
+      }
     })
-  })
+  }
 })
 
-t.test('shows usage', function (t) {
-  which([], function (code, signal, out, err) {
-    t.equal(signal, null)
-    t.equal(code, 1)
-    t.equal(err, 'usage: which [-as] program ...')
-    t.equal(out, '')
-    t.end()
-  })
+t.test('shows usage', async (t) => {
+  const { code, signal, out, err } = await which()
+  t.equal(signal, null)
+  t.equal(code, 1)
+  t.equal(err, 'usage: which [-as] program ...')
+  t.equal(out, '')
 })
 
-t.test('complains about unknown flag', function (t) {
-  which(['node', '-sax'], function (code, signal, out, err) {
-    t.equal(signal, null)
-    t.equal(code, 1)
-    t.equal(out, '')
-    t.equal(err, 'which: illegal option -- x\nusage: which [-as] program ...')
-    t.end()
-  })
+t.test('complains about unknown flag', async (t) => {
+  const { code, signal, out, err } = await which(['node', '-sax'])
+  t.equal(signal, null)
+  t.equal(code, 1)
+  t.equal(out, '')
+  t.equal(err, 'which: illegal option -- x\nusage: which [-as] program ...')
+})
+
+t.test('anything after -- is ignored', async (t) => {
+  const { code, signal, out, err } = await which(['node', '--', '--anything-goes-here'])
+  t.equal(signal, null)
+  t.equal(code, 0)
+  t.equal(err, '')
+  t.match(out, /[\\/]node(\.exe)?$/i)
 })
