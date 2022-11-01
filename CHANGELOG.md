@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.0.0](https://github.com/npm/node-which/compare/v2.0.2...v3.0.0) (2022-11-01)
+
+### ⚠️ BREAKING CHANGES
+
+* refactored with the following breaking changes
+    - callback has been removed from the async interface, it is now
+    `Promise` only
+    - `which` is now compatible with the following semver range for node:
+    `^14.17.0 || ^16.13.0 || >=18.0.0
+    - cli now ignores any arguments after `--`
+
+### Features
+
+* [`8b0187c`](https://github.com/npm/node-which/commit/8b0187ceab57b0814ad6a77a5706319ffa5bf103) add @npmcli/template-oss and modernize (#86) (@lukekarrys)
+
 ## 2.0.2
 
 * Rename bin to `node-which`
