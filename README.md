@@ -37,9 +37,8 @@ Just like the BSD `which(1)` binary but using `node-which`.
 usage: node-which [-as] program ...
 ```
 
-We used to use `which` as the binaray's name, but it result in some issues later, 
-so we renamed it to `node-which`. You can learn more about this 
-[here](https://github.com/npm/node-which/commit/d65012c1af5d5424bef9fd7c22ad42613804dbab)
+You can learn more about why the binary is `node-which` and not `which` 
+[here](https://github.com/npm/node-which/pull/67)
 
 ## OPTIONS
 
