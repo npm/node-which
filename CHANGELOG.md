@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.1](https://github.com/npm/node-which/compare/v3.0.0...v3.0.1) (2023-05-01)
+
+### Bug Fixes
+
+* [`c3a543e`](https://github.com/npm/node-which/commit/c3a543e589a3ac7876df0fc6927f24d74065a267) [#100](https://github.com/npm/node-which/pull/100) check lower case extensions in windows (#100) (@wraithgar)
+
+### Documentation
+
+* [`ba58b51`](https://github.com/npm/node-which/commit/ba58b51805e001c7ea706bb45e6bee1b2be41673) [#97](https://github.com/npm/node-which/pull/97) Replace binary `which` with `node-which` in README.md (#97) (@DevDengChao)
+
 ## [3.0.0](https://github.com/npm/node-which/compare/v2.0.2...v3.0.0) (2022-11-01)
 
 ### ⚠️ BREAKING CHANGES
