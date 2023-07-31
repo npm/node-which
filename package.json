@@ -13,7 +13,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "isexe": "^2.0.0"
+    "isexe": "^3.1.0"
   },
   "devDependencies": {
     "@npmcli/eslint-config": "^4.0.0",
