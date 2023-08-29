@@ -36,7 +36,7 @@ const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ..._op
       if (isWindows && platform === 'posix') {
         const isexe = async (p) => [].concat(expect).includes(p)
         isexe.sync = (p) => [].concat(expect).includes(p)
-        mocks.isexe = isexe
+        mocks.isexe = { isexe, sync: isexe.sync }
       }
 
       const which = t.mock('..', mocks)
