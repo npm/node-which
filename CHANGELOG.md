@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.0](https://github.com/npm/node-which/compare/v3.0.1...v4.0.0) (2023-08-29)
+
+### ⚠️ BREAKING CHANGES
+
+* support for node 14 has been removed
+
+### Bug Fixes
+
+* [`c7122cd`](https://github.com/npm/node-which/commit/c7122cd2b1738214f7ce43e854992725d7ac0a65) [#105](https://github.com/npm/node-which/pull/105) drop node14 support (@wraithgar)
+* [`0083d3c`](https://github.com/npm/node-which/commit/0083d3c14af23f2a7eb8f400863c3c1b9028fa31) [#105](https://github.com/npm/node-which/pull/105) update for breaking isexe api (@wraithgar)
+* [`00b5cda`](https://github.com/npm/node-which/commit/00b5cda3e3295bd55f3886d25cc5a8f879a64b5a) [#106](https://github.com/npm/node-which/pull/106) replace reduce with flatMap (#106) (@green961)
+
+### Dependencies
+
+* [`22d1c84`](https://github.com/npm/node-which/commit/22d1c845d390edc410700a4202d52a6680cf6f16) [#105](https://github.com/npm/node-which/pull/105) Bump isexe from 2.0.0 to 3.1.1
+
 ## [3.0.1](https://github.com/npm/node-which/compare/v3.0.0...v3.0.1) (2023-05-01)
 
 ### Bug Fixes
