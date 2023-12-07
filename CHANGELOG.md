@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.0.1](https://github.com/npm/node-which/compare/v4.0.0...v4.0.1) (2023-12-07)
+
+### Chores
+
+* [`25c5191`](https://github.com/npm/node-which/commit/25c5191ec4e29d8f83028fae5f52c0182d006d96) [#132](https://github.com/npm/node-which/pull/132) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`4524466`](https://github.com/npm/node-which/commit/452446664ecf02bc04804247e2766bd9cb972f77) [#132](https://github.com/npm/node-which/pull/132) bump @npmcli/template-oss from 4.21.1 to 4.21.3 (@dependabot[bot])
+* [`ccfed53`](https://github.com/npm/node-which/commit/ccfed531b491c58a5652f677e5a6e68c9e93288f) [#129](https://github.com/npm/node-which/pull/129) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`a510f62`](https://github.com/npm/node-which/commit/a510f62d5ad5e3d2334172d1772b0467206ce002) [#129](https://github.com/npm/node-which/pull/129) bump @npmcli/template-oss from 4.19.0 to 4.21.1 (@dependabot[bot])
+* [`e527d9c`](https://github.com/npm/node-which/commit/e527d9c71046d0352d30e7823ef944e2f29a5284) [#110](https://github.com/npm/node-which/pull/110) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`997b938`](https://github.com/npm/node-which/commit/997b9380424903f6befaa0464063d2f1fa55ecd8) [#110](https://github.com/npm/node-which/pull/110) bump @npmcli/template-oss from 4.18.1 to 4.19.0 (@dependabot[bot])
+* [`7888a7e`](https://github.com/npm/node-which/commit/7888a7e3a04ec40a35e37d963e174382a90eb8bf) [#109](https://github.com/npm/node-which/pull/109) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`d488576`](https://github.com/npm/node-which/commit/d488576dd87dff3e47de48e47e450372c3de3f8c) [#109](https://github.com/npm/node-which/pull/109) bump @npmcli/template-oss from 4.18.0 to 4.18.1 (@dependabot[bot])
+
 ## [4.0.0](https://github.com/npm/node-which/compare/v3.0.1...v4.0.0) (2023-08-29)
 
 ### ⚠️ BREAKING CHANGES
