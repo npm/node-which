@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/npm/node-which/compare/v4.0.0...v4.0.1) (2024-04-21)
+
+### Chores
+
+* [`cbc6d2c`](https://github.com/npm/node-which/commit/cbc6d2cf3385e128940292fba9ab43cb5326071b) [#137](https://github.com/npm/node-which/pull/137) postinstall for dependabot template-oss PR (@lukekarrys)
+* [`cb29857`](https://github.com/npm/node-which/commit/cb2985743c0614cda6a2cae890c259675dda9309) [#137](https://github.com/npm/node-which/pull/137) bump @npmcli/template-oss from 4.21.3 to 4.21.4 (@dependabot[bot])
+
 ## [4.0.0](https://github.com/npm/node-which/compare/v3.0.1...v4.0.0) (2023-08-29)
 
 ### ⚠️ BREAKING CHANGES
