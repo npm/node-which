@@ -2,7 +2,7 @@
   "author": "GitHub Inc.",
   "name": "which",
   "description": "Like which(1) unix command. Find the first instance of an executable in the PATH.",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/npm/node-which.git"

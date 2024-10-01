@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.0.0](https://github.com/npm/node-which/compare/v4.0.0...v5.0.0) (2024-10-01)
+### ⚠️ BREAKING CHANGES
+* `which` now supports node `^18.17.0 || >=20.5.0`
+### Bug Fixes
+* [`77aba08`](https://github.com/npm/node-which/commit/77aba0830270333907d00b5d550df9afa7348497) [#151](https://github.com/npm/node-which/pull/151) align to npm 10 node engine range (@reggi)
+### Chores
+* [`5d49ed0`](https://github.com/npm/node-which/commit/5d49ed025f39923a3b2b898fda3ee825f71b1cc2) [#151](https://github.com/npm/node-which/pull/151) run template-oss-apply (@reggi)
+* [`8a2d8e0`](https://github.com/npm/node-which/commit/8a2d8e0be67bc78f38895c9e8adfe6a749ff22be) [#149](https://github.com/npm/node-which/pull/149) bump @npmcli/eslint-config from 4.0.5 to 5.0.0 (@dependabot[bot])
+* [`d4009b2`](https://github.com/npm/node-which/commit/d4009b202b555838a2d98f39da36d7c36aca3896) [#138](https://github.com/npm/node-which/pull/138) bump @npmcli/template-oss to 4.22.0 (@lukekarrys)
+* [`1a07cd7`](https://github.com/npm/node-which/commit/1a07cd710351a3d5d608fff13fccebeae4cddbfe) [#150](https://github.com/npm/node-which/pull/150) postinstall for dependabot template-oss PR (@hashtagchris)
+* [`45f3aa8`](https://github.com/npm/node-which/commit/45f3aa80a0495348797383419cacef6349b9c082) [#150](https://github.com/npm/node-which/pull/150) bump @npmcli/template-oss from 4.23.1 to 4.23.3 (@dependabot[bot])
+
 ## [4.0.0](https://github.com/npm/node-which/compare/v3.0.1...v4.0.0) (2023-08-29)
 
 ### ⚠️ BREAKING CHANGES
