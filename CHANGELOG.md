@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.0](https://github.com/npm/node-which/compare/v5.0.0...v6.0.0) (2025-10-22)
+### ⚠️ BREAKING CHANGES
+* align to npm 11 node engine range (#161)
+### Bug Fixes
+* [`cf1a1bc`](https://github.com/npm/node-which/commit/cf1a1bc32652456b317c2fdbd957fe4c56f9bbca) [#161](https://github.com/npm/node-which/pull/161) align to npm 11 node engine range (#161) (@owlstronaut)
+### Chores
+* [`66cf669`](https://github.com/npm/node-which/commit/66cf669cc6c92ddf4dd128ca2ef1417d0c8f01ae) [#160](https://github.com/npm/node-which/pull/160) bump @npmcli/template-oss from 4.26.0 to 4.27.1 (#160) (@dependabot[bot], @npm-cli-bot)
+
 ## [5.0.0](https://github.com/npm/node-which/compare/v4.0.0...v5.0.0) (2024-10-01)
 ### ⚠️ BREAKING CHANGES
 * `which` now supports node `^18.17.0 || >=20.5.0`
