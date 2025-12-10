@@ -1,4 +1,5 @@
-const t = require('tap')
+const { test } = require('node:test')
+const assert = require('node:assert')
 const spawn = require('child_process').spawn
 
 const node = process.execPath
@@ -32,87 +33,81 @@ function which (args, extraPath) {
   })
 }
 
-t.test('finds node', async (t) => {
+test('finds node', async () => {
   const { code, signal, out, err } = await which('node')
-  t.equal(signal, null)
-  t.equal(code, 0)
-  t.equal(err, '')
-  t.match(out, /[\\/]node(\.exe)?$/i)
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 0)
+  assert.strictEqual(err, '')
+  assert.match(out, /[\\/]node(\.exe)?$/i)
 })
 
-t.test('does not find flergyderp', async (t) => {
+test('does not find flergyderp', async () => {
   const { code, signal, out, err } = await which('flergyderp')
-  t.equal(signal, null)
-  t.equal(code, 1)
-  t.equal(err, '')
-  t.match(out, '')
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 1)
+  assert.strictEqual(err, '')
+  assert.strictEqual(out, '')
 })
 
-t.test('finds node and tap', async (t) => {
-  const { code, signal, out, err } = await which(['node', 'tap'])
-  t.equal(signal, null)
-  t.equal(code, 0)
-  t.equal(err, '')
-  t.match(out.split(/[\r\n]+/), [
-    /[\\/]node(\.exe)?$/i,
-    /[\\/]tap(\.cmd)?$/i,
-  ])
+test('finds node and eslint', async () => {
+  const { code, signal, out, err } = await which(['node', 'eslint'])
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 0)
+  assert.strictEqual(err, '')
+  const lines = out.split(/[\r\n]+/)
+  assert.match(lines[0], /[\\/]node(\.exe)?$/i)
+  assert.match(lines[1], /[\\/]eslint(\.cmd)?$/i)
 })
 
-t.test('finds node and tap, but not flergyderp', async (t) => {
-  const { code, signal, out, err } = await which(['node', 'flergyderp', 'tap'])
-  t.equal(signal, null)
-  t.equal(code, 1)
-  t.equal(err, '')
-  t.match(out.split(/[\r\n]+/), [
-    /[\\/]node(\.exe)?$/i,
-    /[\\/]tap(\.cmd)?$/i,
-  ])
+test('finds node and eslint, but not flergyderp', async () => {
+  const { code, signal, out, err } = await which(['node', 'flergyderp', 'eslint'])
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 1)
+  assert.strictEqual(err, '')
+  const lines = out.split(/[\r\n]+/)
+  assert.match(lines[0], /[\\/]node(\.exe)?$/i)
+  assert.match(lines[1], /[\\/]eslint(\.cmd)?$/i)
 })
 
-t.test('cli flags', async (t) => {
+test('cli flags', async (t) => {
   const p = require('path').dirname(bin)
 
   for (const c of ['-a', '-s', '-as', '-sa']) {
-    t.test(c, async (t) => {
+    await t.test(c, { skip: process.platform === 'win32' && /a/.test(c) ? 'windows does not have builtin "which"' : false }, async () => {
       let { code, signal, out, err } = await which(['which', c], p)
-      t.equal(signal, null)
-      t.equal(code, 0)
-      t.equal(err, '')
+      assert.strictEqual(signal, null)
+      assert.strictEqual(code, 0)
+      assert.strictEqual(err, '')
       if (/s/.test(c)) {
-        t.equal(out, '', 'should be silent')
+        assert.strictEqual(out, '', 'should be silent')
       } else if (/a/.test(c)) {
         out = out.split(/[\r\n]+/)
-        const opt = { actual: out }
-        if (process.platform === 'win32') {
-          opt.skip = 'windows does not have builtin "which"'
-        }
-        t.ok(out.length > 0, 'should have a result', opt)
+        assert.ok(out.length > 0, 'should have a result')
       }
     })
   }
 })
 
-t.test('shows usage', async (t) => {
+test('shows usage', async () => {
   const { code, signal, out, err } = await which()
-  t.equal(signal, null)
-  t.equal(code, 1)
-  t.equal(err, 'usage: which [-as] program ...')
-  t.equal(out, '')
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 1)
+  assert.strictEqual(err, 'usage: which [-as] program ...')
+  assert.strictEqual(out, '')
 })
 
-t.test('complains about unknown flag', async (t) => {
+test('complains about unknown flag', async () => {
   const { code, signal, out, err } = await which(['node', '-sax'])
-  t.equal(signal, null)
-  t.equal(code, 1)
-  t.equal(out, '')
-  t.equal(err, 'which: illegal option -- x\nusage: which [-as] program ...')
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 1)
+  assert.strictEqual(out, '')
+  assert.strictEqual(err, 'which: illegal option -- x\nusage: which [-as] program ...')
 })
 
-t.test('anything after -- is ignored', async (t) => {
+test('anything after -- is ignored', async () => {
   const { code, signal, out, err } = await which(['node', '--', '--anything-goes-here'])
-  t.equal(signal, null)
-  t.equal(code, 0)
-  t.equal(err, '')
-  t.match(out, /[\\/]node(\.exe)?$/i)
+  assert.strictEqual(signal, null)
+  assert.strictEqual(code, 0)
+  assert.strictEqual(err, '')
+  assert.match(out, /[\\/]node(\.exe)?$/i)
 })
