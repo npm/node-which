@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/npm/node-which/compare/v6.0.0...v6.0.1) (2026-02-10)
+### Dependencies
+* [`bd22353`](https://github.com/npm/node-which/commit/bd223532f5f86a2e8961941b7868cb72a77e0f4e) [#168](https://github.com/npm/node-which/pull/168) bump isexe from 3.1.5 to 4.0.0 (#168) (@dependabot[bot])
+### Chores
+* [`fc4c209`](https://github.com/npm/node-which/commit/fc4c209e09061e99e3d30204178c422750e4f61a) [#163](https://github.com/npm/node-which/pull/163) bump @npmcli/eslint-config from 5.1.0 to 6.0.0 (#163) (@dependabot[bot])
+* [`46b25d7`](https://github.com/npm/node-which/commit/46b25d765671fdbd88e0779ff5bcee5798ac9151) [#165](https://github.com/npm/node-which/pull/165) bump @npmcli/template-oss from 4.28.0 to 4.28.1 (#165) (@dependabot[bot], @npm-cli-bot)
+
 ## [6.0.0](https://github.com/npm/node-which/compare/v5.0.0...v6.0.0) (2025-10-22)
 ### ⚠️ BREAKING CHANGES
 * align to npm 11 node engine range (#161)
