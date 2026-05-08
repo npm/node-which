@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.0.0](https://github.com/npm/node-which/compare/v6.0.1...v7.0.0) (2026-05-08)
+### ⚠️ BREAKING CHANGES
+* `which` now supports node `^22.22.2 || ^24.15.0 || >=26.0.0`
+* template-oss-apply
+### Features
+* [`471d90b`](https://github.com/npm/node-which/commit/471d90ba5f4c8af8e9d8c8604d57b1128255bfb8) [#176](https://github.com/npm/node-which/pull/176) bump to new node engine range (@owlstronaut)
+* [`8aac36f`](https://github.com/npm/node-which/commit/8aac36f904ed4ba17e269763e0267167ac6a729d) [#176](https://github.com/npm/node-which/pull/176) template-oss-apply (@owlstronaut)
+### Chores
+* [`9bdf003`](https://github.com/npm/node-which/commit/9bdf0037cb47aaa7f89eb7ae0372d7f90b8557d3) [#176](https://github.com/npm/node-which/pull/176) template-oss-apply (@owlstronaut)
+
 ## [6.0.1](https://github.com/npm/node-which/compare/v6.0.0...v6.0.1) (2026-02-10)
 ### Dependencies
 * [`bd22353`](https://github.com/npm/node-which/commit/bd223532f5f86a2e8961941b7868cb72a77e0f4e) [#168](https://github.com/npm/node-which/pull/168) bump isexe from 3.1.5 to 4.0.0 (#168) (@dependabot[bot])
