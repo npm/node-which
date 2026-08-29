@@ -4,7 +4,7 @@ const fs = require('fs')
 const { basename, join, relative, sep, delimiter } = require('path')
 const isWindows = process.platform === 'win32'
 
-const ENV_VARS = { PATH: process.env.PATH, PATHEXT: process.env.PATHEXT }
+const ENV_VARS = { PATH: process.env.PATH, Path: process.env.Path, PATHEXT: process.env.PATHEXT }
 const PLATFORM = Object.getOwnPropertyDescriptor(process, 'platform')
 
 const runTest = async (t, exec, expect, { platforms = ['posix', 'win32'], ..._opt } = {}) => {
@@ -111,6 +111,19 @@ t.test('find when executable', async t => {
     const dir = basename(process.cwd())
     const rel = join('..', dir, relative(process.cwd(), foo))
     await runTest(t, rel, rel, opts)
+  })
+})
+
+t.test('falls back to process.env.Path on Windows', async t => {
+  const fixture = t.testdir({ 'foo.sh': 'echo foo\n' })
+  const foo = join(fixture, 'foo.sh')
+  fs.chmodSync(foo, 0o755)
+  delete process.env.PATH
+  process.env.Path = fixture
+
+  await runTest(t, basename(foo), foo, {
+    platforms: ['win32'],
+    pathExt: '.sh',
   })
 })
 
