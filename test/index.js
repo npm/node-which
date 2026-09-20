@@ -137,6 +137,135 @@ t.test('find all', async t => {
   })
 })
 
+t.test('windows app execution aliases', async (t) => {
+  const fixture = t.testdir({
+    Microsoft: {
+      WindowsApps: {
+        'mspaint.exe': 'alias',
+      },
+    },
+    other: {
+      'notepad.exe': 'real',
+    },
+  })
+  const apps = join(fixture, 'Microsoft', 'WindowsApps')
+  const mspaint = join(apps, 'mspaint.exe')
+  const otherDir = join(fixture, 'other')
+
+  const runAlias = async (t, expect, {
+    platform = 'win32',
+    cmd = 'mspaint',
+    isexeImpl,
+    ...opt
+  } = {}) => {
+    Object.defineProperty(process, 'platform', { ...PLATFORM, value: platform })
+    t.teardown(() => {
+      Object.defineProperty(process, 'platform', PLATFORM)
+    })
+
+    const which = t.mock('..', {
+      isexe: {
+        isexe: async (...args) => isexeImpl(...args),
+        sync: isexeImpl,
+      },
+    })
+
+    if (expect?.code) {
+      await t.rejects(() => which(cmd, opt), expect, 'async rejects')
+      t.throws(() => which.sync(cmd, opt), expect, 'sync throws')
+    } else {
+      t.strictSame(await which(cmd, opt), expect, 'async')
+      t.strictSame(which.sync(cmd, opt), expect, 'sync')
+    }
+  }
+
+  t.test('finds alias when isexe reports not executable', async (t) => {
+    await runAlias(t, mspaint, {
+      path: apps,
+      pathExt: '.exe',
+      isexeImpl: () => false,
+    })
+  })
+
+  t.test('finds alias by absolute path', async (t) => {
+    await runAlias(t, mspaint, {
+      cmd: mspaint,
+      pathExt: '.exe',
+      isexeImpl: () => false,
+    })
+  })
+
+  t.test('finds alias when isexe throws EACCES', async (t) => {
+    const denied = Object.assign(new Error('EACCES'), { code: 'EACCES' })
+    await runAlias(t, mspaint, {
+      path: apps,
+      pathExt: '.exe',
+      isexeImpl: () => {
+        throw denied
+      },
+    })
+  })
+
+  t.test('finds alias when isexe throws EPERM', async (t) => {
+    const denied = Object.assign(new Error('EPERM'), { code: 'EPERM' })
+    await runAlias(t, mspaint, {
+      path: apps,
+      pathExt: '.exe',
+      isexeImpl: () => {
+        throw denied
+      },
+    })
+  })
+
+  t.test('rethrows unexpected isexe errors', async (t) => {
+    const io = Object.assign(new Error('EIO'), { code: 'EIO' })
+    await runAlias(t, { code: 'EIO' }, {
+      path: apps,
+      pathExt: '.exe',
+      isexeImpl: () => {
+        throw io
+      },
+    })
+  })
+
+  t.test('does not treat missing WindowsApps files as executable', async (t) => {
+    await runAlias(t, null, {
+      cmd: 'notepad',
+      path: apps,
+      pathExt: '.exe',
+      nothrow: true,
+      isexeImpl: () => false,
+    })
+  })
+
+  t.test('does not apply fallback outside WindowsApps', async (t) => {
+    await runAlias(t, { code: 'ENOENT' }, {
+      cmd: 'notepad',
+      path: otherDir,
+      pathExt: '.exe',
+      isexeImpl: () => false,
+    })
+  })
+
+  t.test('posix does not apply WindowsApps fallback', async (t) => {
+    await runAlias(t, { code: 'ENOENT' }, {
+      platform: 'posix',
+      cmd: mspaint,
+      isexeImpl: () => false,
+    })
+  })
+
+  t.test('finds all aliases', async (t) => {
+    await runAlias(t, [mspaint], {
+      cmd: 'mspaint',
+      path: apps,
+      pathExt: '.EXE',
+      all: true,
+      isexeImpl: () => false,
+    })
+  })
+})
+
 t.test('pathExt', async (t) => {
   const fixture = t.testdir({ 'foo.sh': 'echo foo\n' })
   const foo = join(fixture, 'foo.sh')
