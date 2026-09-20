@@ -1,7 +1,7 @@
 
 const t = require('tap')
 const fs = require('fs')
-const { basename, join, relative, sep, delimiter } = require('path')
+const { basename, join, relative, sep, delimiter, win32 } = require('path')
 const isWindows = process.platform === 'win32'
 
 const ENV_VARS = { PATH: process.env.PATH, PATHEXT: process.env.PATHEXT }
@@ -171,5 +171,86 @@ t.test('pathExt', async (t) => {
       path: fixture,
       pathExt: '',
     })
+  })
+})
+
+// https://github.com/npm/node-which/issues/56
+t.test('walks PATH past Windows drive-letter entries', async t => {
+  t.test('finds executable after a D:\\\\ entry', async t => {
+    const fixture = t.testdir({ 'foo.sh': 'echo foo\n' })
+    const foo = join(fixture, 'foo.sh')
+    fs.chmodSync(foo, '0755')
+    await runTest(t, basename(foo), foo, {
+      path: ['D:\\definitely-not-here', fixture].join(';'),
+      delimiter: ';',
+      pathExt: '.sh',
+    })
+  })
+
+  t.test('does not split D:\\\\ or C:\\\\ colons when delimiter is :', async t => {
+    const cmd = 'git'
+    const laterDir = 'C:\\Program Files\\Git\\cmd'
+    const later = win32.join(laterDir, cmd) + '.EXE'
+    // Include D:/, D:\, and a trailing D: so every drive-colon form is walked.
+    const pathEnv = `D:/offline:D:\\Tools\\Git\\cmd:${laterDir}:D:`
+
+    const platform = Object.getOwnPropertyDescriptor(process, 'platform')
+    Object.defineProperty(process, 'platform', { ...platform, value: 'win32' })
+    t.teardown(() => Object.defineProperty(process, 'platform', platform))
+
+    const isexe = async (p) => p === later
+    isexe.sync = (p) => p === later
+    const which = t.mock('..', { isexe: { isexe, sync: isexe.sync } })
+    const opt = { path: pathEnv, delimiter: ':', pathExt: '.EXE' }
+
+    t.equal(await which(cmd, opt), later, 'async')
+    t.equal(which.sync(cmd, opt), later, 'sync')
+  })
+
+  t.test('splits a Windows PATH on ; even if delimiter is :', async t => {
+    const cmd = 'git'
+    const laterDir = 'C:\\Program Files\\Git\\cmd'
+    const later = win32.join(laterDir, cmd) + '.EXE'
+    const pathEnv = `D:\\NoGit;${laterDir}`
+
+    const platform = Object.getOwnPropertyDescriptor(process, 'platform')
+    Object.defineProperty(process, 'platform', { ...platform, value: 'win32' })
+    t.teardown(() => Object.defineProperty(process, 'platform', platform))
+
+    const isexe = async (p) => p === later
+    isexe.sync = (p) => p === later
+    const which = t.mock('..', { isexe: { isexe, sync: isexe.sync } })
+    const opt = { path: pathEnv, delimiter: ':', pathExt: '.EXE' }
+
+    t.equal(await which(cmd, opt), later, 'async')
+    t.equal(which.sync(cmd, opt), later, 'sync')
+  })
+
+  t.test('continues after isexe throws on a drive entry', async t => {
+    const fixture = t.testdir({ 'foo.sh': 'echo foo\n' })
+    const foo = join(fixture, 'foo.sh')
+    fs.chmodSync(foo, '0755')
+
+    const { isexe, sync } = require('isexe')
+    const throwThen = (fn) => {
+      let thrown = false
+      return (p, opt) => {
+        if (!thrown) {
+          thrown = true
+          throw Object.assign(new Error('not ready'), { code: 'UNKNOWN' })
+        }
+        return fn(p, opt)
+      }
+    }
+
+    const which = t.mock('..', {
+      isexe: { isexe: throwThen(isexe), sync: throwThen(sync) },
+    })
+    const opt = {
+      path: `D:\\offline\\bin${delimiter}${fixture}`,
+      pathExt: '.sh',
+    }
+    t.equal(await which(basename(foo), opt), foo, 'async')
+    t.equal(which.sync(basename(foo), opt), foo, 'sync')
   })
 })
