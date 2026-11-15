@@ -165,6 +165,15 @@ t.test('pathExt', async (t) => {
     await runTest(t, basename(foo, '.sh'), foo, { ...opts, path: fixture, pathExt })
   })
 
+  t.test('foo - all matches with lowercase pathExt', async (t) => {
+    await runTest(t, basename(foo, '.sh'), [foo], {
+      ...opts,
+      path: fixture,
+      pathExt,
+      all: true,
+    })
+  })
+
   t.test('foo - no pathext', async (t) => {
     await runTest(t, basename(foo, '.sh'), { code: 'ENOENT' }, {
       ...opts,
@@ -172,4 +181,22 @@ t.test('pathExt', async (t) => {
       pathExt: '',
     })
   })
+})
+
+t.test('pathExt preserves case-sensitive matches in order', async t => {
+  Object.defineProperty(process, 'platform', { ...PLATFORM, value: 'win32' })
+  t.teardown(() => Object.defineProperty(process, 'platform', PLATFORM))
+
+  const cmd = join(t.testdir(), 'foo')
+  const matches = [`${cmd}.SH`, `${cmd}.sh`]
+  // Model a case-sensitive Windows directory regardless of the host filesystem.
+  const which = t.mock('..', {
+    isexe: {
+      isexe: async p => matches.includes(p),
+      sync: p => matches.includes(p),
+    },
+  })
+  const opts = { pathExt: '.SH', all: true }
+  t.strictSame(await which(cmd, opts), matches, 'async')
+  t.strictSame(which.sync(cmd, opts), matches, 'sync')
 })
